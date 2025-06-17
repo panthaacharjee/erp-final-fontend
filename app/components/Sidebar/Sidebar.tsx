@@ -1,0 +1,50 @@
+import React, { useState } from 'react'
+import Image from 'next/image';
+
+/* ========== Components ========= */
+import { SidebarData } from '../StaticData';
+
+/* ========== Images ========= */
+import Logo from "../../../images/bandlogo.svg"
+import HrandAdmin from './HrandAdmin';
+
+
+const Sidebar = () => {
+    const [sidebar, setSidebar] = useState(false)
+    const [selected, setSelected] = useState<number | undefined >()
+    const sidebarFunc = (props:number)=>{
+        if(sidebar === false){
+            setSidebar(true)
+            setSelected(props)
+        }else if(selected !== props){
+            setSidebar(true)
+            setSelected(props)
+        }else{
+            setSidebar(false)
+            setSelected(undefined)
+        }
+    }
+  return (
+    <div className='fixed z-50 top-0 left-0 flex h-screen w-full'>
+        <div className=' bg-black text-white w-1/12'>
+            {SidebarData?.map((val, ind)=>{
+                return <div onClick={()=>sidebarFunc(val.sl)} key={ind} className={`flex flex-col items-center py-3 border-b-[1px] border-gray-400 px-4  ${selected === val.sl ? "bg-[#13a7ec]":"hover:bg-[#13a7ecde] hover:text-black"}`}>
+                            <span className='text-xl mb-1'>{val.icon}</span>
+                            <p className='text-xs text-center cursor-default select-none' dangerouslySetInnerHTML={{__html: val.title}}/>
+                        </div>
+            })}
+            <div className=''></div>
+            <div className='mt-[-5px]'>
+                <div className=''>
+                    <Image src={Logo} alt='Logo' className='h-16 w-16 mx-auto select-none'/>
+                </div>
+            </div>
+        </div>
+        {sidebar && <div className={` bg-[#70b5d4]  h-screen  opacity-85  w-11/12 text-black`}>
+            {selected===2 && <HrandAdmin setSidebar={setSidebar} setSelected={setSelected}/>}
+        </div>}
+    </div>
+  )
+}
+
+export default Sidebar

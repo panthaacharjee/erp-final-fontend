@@ -1,20 +1,23 @@
 @import "tailwindcss";
+ @plugin "daisyui" {
+   themes: light --default;
+ }
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
 
-@theme inline {
+/* @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
+} */
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #ffffff;
     --foreground: #ededed;
   }
 }
@@ -23,4 +26,26 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.bg-image{
+  /* background: url("../images/loginbg.jpg"), linear-gradient(bottom right, rgba(255, 0, 0, 0.808), rgba(0, 0, 255, 0.76)); */
+  background: linear-gradient(to right, #1b1c20b6, #1b1c20c0), url("../images/loginbg.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: top center;
+  width: 100%;
+  height: 100vh;
+}
+
+.sidebar-content-div-p{
+  color: black;
+}
+
+.sidebar-content-div:hover .sidebar-content-div-p{
+  color:white
+}
+
+.sidebar-content-div:hover .sidebar-content-div-p:hover{
+  color:yellow
 }
