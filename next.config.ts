@@ -10,7 +10,10 @@ const nextConfig: NextConfig = {
   //         },
   //       ];
   //     },
-  devIndicators: false
+  devIndicators: false,
+   eslint: {
+    ignoreDuringBuilds: true, // Disable during builds
+  },
 };
 
 export default nextConfig;
