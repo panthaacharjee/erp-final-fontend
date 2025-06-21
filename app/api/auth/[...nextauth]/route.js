@@ -106,7 +106,6 @@ import Axios from "../../../components/Axios"
         sameSite: 'lax',
         path: '/',
         secure: true,
-        domain: 'https://erp-final-fontend.vercel.app/'
       }
     }
   },
