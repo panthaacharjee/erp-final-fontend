@@ -100,12 +100,13 @@ import Axios from "../../../components/Axios"
   },
   cookies: {
     sessionToken: {
-      name: `__Secure-next-auth.session-token`,
+      name: 'next-auth.session-token',
       options: {
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'None',  // Required for cross-site
         path: '/',
-        secure: true,
+        secure: true,      // Requires HTTPS in production
+        
       }
     }
   },
