@@ -100,13 +100,13 @@ import Axios from "../../../components/Axios"
   },
   cookies: {
     sessionToken: {
-      name: 'next-auth.session-token',
+      name: `__Secure-next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: 'None',  // Required for cross-site
+        sameSite: 'lax',
         path: '/',
-        secure: true,      // Requires HTTPS in production
-        
+        secure: true,
+        domain: 'https://erp-final-fontend.vercel.app/'
       }
     }
   },
