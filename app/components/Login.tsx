@@ -16,13 +16,12 @@ import { FaFacebookF } from "react-icons/fa";
 import { FaApple } from "react-icons/fa6";
 import { AiFillGithub } from "react-icons/ai";
 
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useSelector } from 'react-redux'
 import { RootState } from '../redux/rootReducer'
 
 
 const Login = () => {
-    const {status} = useSession()
     const {loading} = useSelector((state:RootState)=>state.user)
     type Inputs = {
         userInput: string

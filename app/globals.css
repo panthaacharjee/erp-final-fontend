@@ -27,6 +27,16 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+/* If you want to keep scrolling but hide the scrollbar: */
+.tab-cont {
+  overflow-x: scroll;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.tab-cont::-webkit-scrollbar {
+  height: 0; /* Chrome, Safari, Opera */
+}
 
 .bg-image{
   /* background: url("../images/loginbg.jpg"), linear-gradient(bottom right, rgba(255, 0, 0, 0.808), rgba(0, 0, 255, 0.76)); */

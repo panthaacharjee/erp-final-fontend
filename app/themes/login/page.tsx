@@ -6,17 +6,20 @@ import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { redirect } from 'next/navigation'
 import Processing from '@/app/components/Processing'
+import { useRouter } from 'next/navigation'
 
 const page = () => {
+  const router = useRouter()
   const {status} = useSession()
   const {isAuthenticated, loading} = useSelector((state:RootState)=>state.user)
   
   useEffect(()=>{
-    if(status==="authenticated" && isAuthenticated){
-      redirect("/")
+    if(status==="authenticated"){
+      router.push("/")
     }
-  },[status, isAuthenticated])
-  if(loading===true){
+  },[status])
+
+  if(status==="loading"){
     return <Processing/>
   }
   if(status === "unauthenticated" && !loading){

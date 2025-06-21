@@ -6,24 +6,18 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from '../redux/rootReducer'
-import Processing from './Processing'
 
 export function withAuth(Component: React.ComponentType) {
   return function ProtectedRoute(props: any) {
     const router = useRouter()
     const {status} = useSession()
-    const {loading, isAuthenticated, error} = useSelector((state:RootState)=>state.user)
-    console.log(error)
+    // const {loading, isAuthenticated, error} = useSelector((state:RootState)=>state.user)
 
     useEffect(() => {
-      if (status==="unauthenticated" && !loading && !isAuthenticated) {
+      if (status==="unauthenticated") {
         router.push('/themes/login')
       }
-    }, [status, router])
-
-    if (status==="unauthenticated") {
-      router.push("/login")
-    }
+    }, [status])
 
     if(status==="authenticated"){
       return <Component {...props} />

@@ -8,10 +8,12 @@ import TabWrapper from "./components/Home/TabWrapper";
 
 
 
+
 function Home() {
+ 
   return (
-    <div className="flex relative">
-      <div className="w-1/12 relative h-screen">
+    <div className="flex w-full">
+      <div className="w-1/12">
         <Sidebar/>
       </div>
       <div className="w-11/12 text-black">

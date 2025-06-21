@@ -5,15 +5,64 @@ import { FaRegArrowAltCircleLeft, FaUserEdit, FaStar, FaUserCheck, FaRegMoneyBil
 import { IoDocumentOutline } from "react-icons/io5";
 import {RiUserShared2Fill } from "react-icons/ri";
 
+import { useDispatch, useSelector } from 'react-redux';
+import { AddTabDataRequest, AddTabDataSuccess } from '@/app/redux/reducers/tabReducer';
+import { RootState } from '@/app/redux/rootReducer';
+import { HrandAdminData } from './SidebarData';
+
+
+interface tabStateData {
+  title: string,
+  icon:string,
+  element:string,
+}
+
 const HrandAdmin = ({setSidebar, setSelected}:any) => {
+  const dispatch = useDispatch()
+  const {items, content} = useSelector((state:RootState)=>state.tab)
   const closeFunc = ()=>{
     setSelected(undefined)
     setSidebar(false)
   }
 
-  const setupFunc = ()=>{
+  const setupFunc = (dataProps:tabStateData)=>{
         setSelected(undefined)
-        setSidebar(false)
+        setSidebar(false)  
+        // if(items.length <= 7){
+        //   dispatch(AddTabDataRequest())
+        //       const id = `Tab-${Date.now()}`
+        //       const data = {
+        //         loading:false,
+        //         items:[...items, {
+        //           id,
+        //           title:dataProps.title,
+        //           icon:dataProps.icon,
+        //         }],
+        //         content:[...content, {
+        //           id,
+        //           element: dataProps.element
+        //         }]
+        //     }
+        //     localStorage.setItem('tabData', JSON.stringify(data))
+        //     dispatch(AddTabDataSuccess(data))
+        // }
+        dispatch(AddTabDataRequest())
+              const id = `Tab-${Date.now()}`
+              const data = {
+                loading:false,
+                items:[...items, {
+                  id,
+                  title:dataProps.title,
+                  icon:dataProps.icon,
+                }],
+                content:[...content, {
+                  id,
+                  element: dataProps.element
+                }]
+            }
+            localStorage.setItem('tabData', JSON.stringify(data))
+            dispatch(AddTabDataSuccess(data))
+        console.log(items.length)
   }
   const reportFunc = ()=>{
         setSelected(undefined)
@@ -26,17 +75,17 @@ const HrandAdmin = ({setSidebar, setSelected}:any) => {
           <div className='w-2/12'>
             <p className='text-white text-sm font-bold text-shadow-2xl text-shadow-black uppercase text-center'>User Management</p>
             <div className='mt-5'>
-                <div onClick={()=>setupFunc()} className=' sidebar-content-div hover:bg-[#13a7ec] flex justify-between items-center  bg-black text-white uppercase font-semibold w-full px-4 py-2 rounded-lg  shadow-md'>
+                <div onClick={()=>setupFunc(HrandAdminData[0])} className=' sidebar-content-div hover:bg-[#13a7ec] flex justify-between items-center  bg-black text-white uppercase font-semibold w-full px-4 py-2 rounded-lg  shadow-md'>
                   <p className='text-xl'><FaUserEdit/></p>
                   <p className='ml-2 text-sm cursor-default'>User Create</p>
                   <p className=' sidebar-content-div-p text-md hover:text-yellow-300 cursor-pointer'><FaStar/></p>
                 </div>
-                <div onClick={()=>setupFunc()} className=' sidebar-content-div hover:bg-[#13a7ec] flex justify-between items-center  bg-black text-white uppercase font-semibold w-full px-4 py-2 rounded-lg  mt-4 shadow-md'>
+                <div onClick={()=>setupFunc(HrandAdminData[1])} className=' sidebar-content-div hover:bg-[#13a7ec] flex justify-between items-center  bg-black text-white uppercase font-semibold w-full px-4 py-2 rounded-lg  mt-4 shadow-md'>
                   <p className='text-xl'><FaUserCheck/></p>
                   <p className='ml-2 text-sm cursor-default'>Attendence</p>
                   <p className=' sidebar-content-div-p text-md hover:text-yellow-300 cursor-pointer'><FaStar/></p>
                 </div>
-                <div onClick={()=>setupFunc()} className=' sidebar-content-div hover:bg-[#13a7ec] flex justify-between items-center  bg-black text-white uppercase font-semibold w-full px-4 py-2 rounded-lg  mt-4 shadow-md'>
+                <div onClick={()=>setupFunc(HrandAdminData[2])} className=' sidebar-content-div hover:bg-[#13a7ec] flex justify-between items-center  bg-black text-white uppercase font-semibold w-full px-4 py-2 rounded-lg  mt-4 shadow-md'>
                   <p className='text-xl'><FaRegMoneyBillAlt/></p>
                   <p className='ml-2 text-sm cursor-default'>Salary Review</p>
                   <p className=' sidebar-content-div-p text-md hover:text-yellow-300 cursor-pointer'><FaStar/></p>
@@ -46,19 +95,19 @@ const HrandAdmin = ({setSidebar, setSelected}:any) => {
           <div className='w-2/12 ml-5'>
             <p className='text-white text-shadow-2xl text-shadow-black text-sm font-bold uppercase text-center'>User Management</p>
             <div className='mt-5'>
-                <div onClick={()=>setupFunc()} className=' sidebar-content-div hover:bg-[#13a7ec] flex justify-between items-center  bg-black text-white uppercase font-semibold w-full px-4 py-2 rounded-lg  shadow-md'>
-                  <p className='text-xl'><FaUserSecret/></p>
-                  <p className='ml-2 text-sm cursor-default'>Guest User</p>
+                <div onClick={()=>setupFunc(HrandAdminData[0])} className=' sidebar-content-div hover:bg-[#13a7ec] flex justify-between items-center  bg-black text-white uppercase font-semibold w-full px-4 py-2 rounded-lg  shadow-md'>
+                  <p className='text-xl'><FaUserEdit/></p>
+                  <p className='ml-2 text-sm cursor-default'>User Create</p>
                   <p className=' sidebar-content-div-p text-md hover:text-yellow-300 cursor-pointer'><FaStar/></p>
                 </div>
-                <div onClick={()=>setupFunc()} className=' sidebar-content-div hover:bg-[#13a7ec] flex justify-between items-center  bg-black text-white uppercase font-semibold w-full px-4 py-2 rounded-lg  mt-4 shadow-md'>
-                  <p className='text-xl'><RiUserShared2Fill/></p>
-                  <p className='ml-2 text-sm cursor-default'>Left User</p>
+                <div onClick={()=>setupFunc(HrandAdminData[1])} className=' sidebar-content-div hover:bg-[#13a7ec] flex justify-between items-center  bg-black text-white uppercase font-semibold w-full px-4 py-2 rounded-lg  mt-4 shadow-md'>
+                  <p className='text-xl'><FaUserCheck/></p>
+                  <p className='ml-2 text-sm cursor-default'>Attendence</p>
                   <p className=' sidebar-content-div-p text-md hover:text-yellow-300 cursor-pointer'><FaStar/></p>
                 </div>
-                <div onClick={()=>setupFunc()} className=' sidebar-content-div hover:bg-[#13a7ec] flex justify-between items-center  bg-black text-white uppercase font-semibold w-full px-4 py-2 rounded-lg  mt-4 shadow-md'>
-                  <p className='text-xl'><FaUsers/></p>
-                  <p className='ml-2 text-sm cursor-default'>All User</p>
+                <div onClick={()=>setupFunc(HrandAdminData[2])} className=' sidebar-content-div hover:bg-[#13a7ec] flex justify-between items-center  bg-black text-white uppercase font-semibold w-full px-4 py-2 rounded-lg  mt-4 shadow-md'>
+                  <p className='text-xl'><FaRegMoneyBillAlt/></p>
+                  <p className='ml-2 text-sm cursor-default'>Salary Review</p>
                   <p className=' sidebar-content-div-p text-md hover:text-yellow-300 cursor-pointer'><FaStar/></p>
                 </div>
             </div>

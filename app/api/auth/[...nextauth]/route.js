@@ -88,10 +88,12 @@ import Axios from "../../../components/Axios"
 
   session: {
     strategy: "jwt",
+    maxAge: 24 * 60 * 60,
   },
   jwt: {
     secret: process.env.AUTH_SECRET,
     encryption: false,
+    maxAge: 24 * 60 * 60,
   },
   pages:{
     signIn:"/"

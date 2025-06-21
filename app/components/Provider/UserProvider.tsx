@@ -12,8 +12,9 @@ interface Props{
 }
 const UserProvider = ({children}:Props) => {
     const dispatch = useDispatch()
+    const {items, content} = useSelector((state:RootState)=>state.tab)
+
     const {data:session, status} = useSession()
-    console.log(session, status)
     const {user} = useSelector((state:RootState)=>state.user)
     const userFunc = async()=>{
         try{
@@ -26,14 +27,23 @@ const UserProvider = ({children}:Props) => {
             dispatch(LoadUserSuccess(data.user))
         }catch(err:any){
             dispatch(LoadUserFail(""))
-            console.log(err)
         }
     }
+
+   
     useEffect(()=>{
         if(status === "authenticated"){
             userFunc()
+            if(items.length<=1 && content.length<=1){
+                const data = {
+                    loading:false,
+                    items,
+                    content
+                }
+                localStorage.setItem("tabData", JSON.stringify(data))
+            }
         }
-    },[status, user])
+    },[status, user, items, content])
 
     if(status==="loading"){
         return <Processing/>

@@ -25,8 +25,8 @@ const Sidebar = () => {
         }
     }
   return (
-    <div className='fixed z-50 top-0 left-0 flex h-screen w-full'>
-        <div className=' bg-black text-white w-1/12'>
+    <div className='flex h-screen relative'>
+        <div className=' bg-black text-white w-1/12 h-screen fixed z-50 top-0 left-0 '>
             {SidebarData?.map((val, ind)=>{
                 return <div onClick={()=>sidebarFunc(val.sl)} key={ind} className={`flex flex-col items-center py-3 border-b-[1px] border-gray-400 px-4  ${selected === val.sl ? "bg-[#13a7ec]":"hover:bg-[#13a7ecde] hover:text-black"}`}>
                             <span className='text-xl mb-1'>{val.icon}</span>
@@ -40,7 +40,7 @@ const Sidebar = () => {
                 </div>
             </div>
         </div>
-        {sidebar && <div className={` bg-[#70b5d4]  h-screen  opacity-85  w-11/12 text-black`}>
+        {sidebar && <div className={` bg-[#70b5d4] z-50 fixed h-screen  opacity-85 top-0 right-0 w-11/12 text-black`}>
             {selected===2 && <HrandAdmin setSidebar={setSidebar} setSelected={setSelected}/>}
         </div>}
     </div>
