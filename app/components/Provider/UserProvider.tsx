@@ -15,7 +15,7 @@ const UserProvider = ({children}:Props) => {
     const {items, content} = useSelector((state:RootState)=>state.tab)
 
     const {data:session, status} = useSession()
-    const {user} = useSelector((state:RootState)=>state.user)
+    const {user, isAuthenticated} = useSelector((state:RootState)=>state.user)
     const userFunc = async()=>{
         try{
             dispatch(LoadUserRequest())
@@ -43,7 +43,7 @@ const UserProvider = ({children}:Props) => {
                 localStorage.setItem("tabData", JSON.stringify(data))
             }
         }
-    },[status, user, items, content])
+    },[  items, content, status])
 
     if(status==="loading"){
         return <Processing/>

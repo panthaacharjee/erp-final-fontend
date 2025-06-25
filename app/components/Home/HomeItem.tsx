@@ -8,7 +8,7 @@ import SalaryCreate from './Content/SalaryCreate'
 
 export const HomeComponent = ({props}:any) => {
     console.log(props)
-    switch(props){
+    switch(props.element){
         case "tab-Home":
             return <HomeContent/>
         case "user_create":
@@ -24,7 +24,7 @@ export const HomeComponent = ({props}:any) => {
 
 export const HomeIcon = ({props}:any) => {
 
-    switch(props){
+    switch(props.element){
         case "tab-Home":
             return <TiHome/>
          case "user_create":

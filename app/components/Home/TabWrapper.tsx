@@ -36,10 +36,10 @@ const TabWrapper = () => {
    
   return (
     <div className='w-full h-full'>
-        <div className='flex fixed  bg-[#d3e6ec] tab-cont h-[38px] w-full'>
+        <div className='flex fixed  bg-[#d3e6ec] tab-cont h-[38px] w-full z-20'>
             {items.map((val:any, ind:number)=>{
-                return <div  key={ind} className={`flex items-center min-w-32 inset-shadow-accent pl-2   py-1 border-r-2 border-r-black ${tab===val.id ? "border-t-[#13a7ec] border-t-2  bg-[#eaeaea] ": " bg-[#bfbfbf] "}`}>
-                        <button className='flex items-center pr-5' onClick={()=>tabFunc(val.id)}>
+                return <div  key={ind} className={`flex items-center min-w-32 inset-shadow-accent  border-r-2 border-r-black ${tab===val.id ? "border-t-[#13a7ec] border-t-2  bg-[#eaeaea] ": " bg-[#bfbfbf] "}`}>
+                        <button className='flex items-center pr-5 pl-2   py-1' onClick={()=>tabFunc(val.id)}>
                             <p className='text-black'><HomeIcon props={val.icon}/></p>
                             <p className='text-black ml-5 font-bold text-sm' >{val.title}</p>
                         </button>
@@ -51,7 +51,7 @@ const TabWrapper = () => {
         <div className='bg-[#eaeaea] '>
             {content?.map((val:any, ind:number)=>{
                 return <div key={ind} className=''>
-                    {tab===val.id && <HomeComponent props={val.element}/>}
+                    {tab===val.id && <HomeComponent props={val}/>}
                 </div>
             })}
         </div>
