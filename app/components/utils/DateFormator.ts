@@ -12,7 +12,6 @@ const DateFormator = (props:Date, sys: string)=>{
       minute: 'numeric',
       hour12: true // Set to true for 12-hour format with AM/PM
     });
-    console.log(formattedTime)
     if(sys==="full"){
       return `${date}-${month+1}-${year}, ${formattedTime}`
     }else{

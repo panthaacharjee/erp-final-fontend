@@ -39,7 +39,7 @@ const Login = () => {
           password : data.pass,
         });
     
-    
+        localStorage.removeItem("tabData")
   }
 
 
