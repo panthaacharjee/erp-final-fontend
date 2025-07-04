@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AddTabDataRequest, AddTabDataSuccess } from '@/app/redux/reducers/tabReducer';
 import { RootState } from '@/app/redux/rootReducer';
 import { HrandAdminData } from './SidebarData';
+import { ClearUserSuccess } from '@/app/redux/reducers/HrReducer';
 
 
 interface tabStateData {
@@ -17,7 +18,7 @@ interface tabStateData {
   element:string,
 }
 
-const HrandAdmin = ({setSidebar, setSelected}:any) => {
+const HrandAdmin = ({setSidebar, setSelected, setTab}:any) => {
   const dispatch = useDispatch()
   const {items, content} = useSelector((state:RootState)=>state.tab)
   const closeFunc = ()=>{
@@ -28,41 +29,28 @@ const HrandAdmin = ({setSidebar, setSelected}:any) => {
   const setupFunc = (dataProps:tabStateData)=>{
         setSelected(undefined)
         setSidebar(false)  
-        // if(items.length <= 7){
-        //   dispatch(AddTabDataRequest())
-        //       const id = `Tab-${Date.now()}`
-        //       const data = {
-        //         loading:false,
-        //         items:[...items, {
-        //           id,
-        //           title:dataProps.title,
-        //           icon:dataProps.icon,
-        //         }],
-        //         content:[...content, {
-        //           id,
-        //           element: dataProps.element
-        //         }]
-        //     }
-        //     localStorage.setItem('tabData', JSON.stringify(data))
-        //     dispatch(AddTabDataSuccess(data))
-        // }
         dispatch(AddTabDataRequest())
-              const id = `Tab-${Date.now()}`
-              const data = {
-                loading:false,
-                items:[...items, {
-                  id,
-                  title:dataProps.title,
-                  icon:dataProps.icon,
-                }],
-                content:[...content, {
-                  id,
-                  element: dataProps.element
-                }]
+        
+        const sameTab = items.filter((val:any)=>val.title === dataProps.title)
+        if(sameTab.length===0){
+            const id = `Tab-${Date.now()}`
+            const data = {
+              loading:false,
+              items:[...items, {
+              id,
+              title:dataProps.title,
+              icon:dataProps.icon,
+              }],
+              content:[...content, {
+              id,
+              element: dataProps.element
+              }]
             }
             localStorage.setItem('tabData', JSON.stringify(data))
             dispatch(AddTabDataSuccess(data))
-        console.log(items.length)
+        }else{
+          setTab(sameTab[0].id)
+        }
   }
   const reportFunc = ()=>{
         setSelected(undefined)

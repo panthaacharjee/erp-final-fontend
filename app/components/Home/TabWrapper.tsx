@@ -4,10 +4,10 @@ import { HomeComponent, HomeIcon } from './HomeItem';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/app/redux/rootReducer';
 import { RemoveTabRequest, RemoveTabSuccess } from '@/app/redux/reducers/tabReducer';
+import { ClearUserSuccess } from '@/app/redux/reducers/HrReducer';
 
-const TabWrapper = () => {
+const TabWrapper = ({tab, setTab}:any) => {
     const dispatch = useDispatch()
-    const [tab, setTab] = useState<string | undefined>('tab-Home')
     // console.log(tab)
     const {items, content} = useSelector((state:RootState)=>state.tab)
 
@@ -51,7 +51,7 @@ const TabWrapper = () => {
         <div className='bg-[#eaeaea] '>
             {content?.map((val:any, ind:number)=>{
                 return <div key={ind} className=''>
-                    {tab===val.id && <HomeComponent props={val}/>}
+                    {tab===val.id && <HomeComponent props={val} setTab={setTab} tab={tab}/>}
                 </div>
             })}
         </div>

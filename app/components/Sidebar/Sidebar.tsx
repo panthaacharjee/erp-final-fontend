@@ -9,7 +9,7 @@ import Logo from "../../../images/bandlogo.svg"
 import HrandAdmin from './HrandAdmin';
 
 
-const Sidebar = () => {
+const Sidebar = ({setTab}:any) => {
     const [sidebar, setSidebar] = useState(false)
     const [selected, setSelected] = useState<number | undefined >()
     const sidebarFunc = (props:number)=>{
@@ -41,7 +41,7 @@ const Sidebar = () => {
             </div>
         </div>
         {sidebar && <div className={` bg-[#70b5d4] z-50 fixed h-screen  opacity-85 top-0 right-0 w-11/12 text-black`}>
-            {selected===2 && <HrandAdmin setSidebar={setSidebar} setSelected={setSelected}/>}
+            {selected===2 && <HrandAdmin setSidebar={setSidebar} setSelected={setSelected} setTab={setTab}/>}
         </div>}
     </div>
   )

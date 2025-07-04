@@ -1,0 +1,35 @@
+export type Usercreateform  ={
+    employeeId:string,
+    name: string,
+    userName:string,
+    email:string,
+    basic:number,
+    home:number,
+    medical:number,
+    conveyance:number,
+    food:number,
+    special:number,
+    joinDate:Date
+    section:string,
+    category:string,
+    designation:string,
+    department:string,
+    vill:string,
+    thana:string,
+    post:string,
+    postCode:number,
+    district:string,
+    father : string,
+    mother:string,
+    blood:string,
+    nid:string,
+    dob: Date,
+    phone:string
+    certificate:string,
+    qualification:string,
+    nomineeName:string,
+    relation:string
+    account:string,
+    bankName :string,
+    route:number
+}

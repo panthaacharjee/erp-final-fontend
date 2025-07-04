@@ -6,7 +6,8 @@ import { RootState } from '../../redux/rootReducer'
 import { LoadUserRequest, LoadUserSuccess, LoadUserFail } from '../../redux/reducers/userReducer'
 import Axios from '../Axios'
 import Processing from '../Processing'
-
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 interface Props{
     children: React.ReactNode
 }
@@ -48,7 +49,7 @@ const UserProvider = ({children}:Props) => {
     if(status==="loading"){
         return <Processing/>
     }
-  return <div>{children}</div>
+  return <div>{children}<ToastContainer/></div>
   
 }
 

@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+
+
 /* ============ Provider ============== */
 import QueryProvider from "./components/Provider/QueryProvider";
 import Session from "./components/Provider/SessionProvider";
 import ReduxProvider from "./components/Provider/ReduxProvider";
 import UserProvider from "./components/Provider/UserProvider";
+import ToastProvider from "./components/Provider/ToastProvider";
 
 
 const geistSans = Geist({
@@ -38,7 +41,10 @@ export default function RootLayout({
         <ReduxProvider>
           <Session>
             <QueryProvider>
-              <UserProvider>{children}</UserProvider>
+              <UserProvider>
+                {children}
+                <ToastProvider/>
+              </UserProvider>
             </QueryProvider>
           </Session>
         </ReduxProvider>

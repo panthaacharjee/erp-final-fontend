@@ -35,7 +35,7 @@ import Axios from "../../../components/Axios"
       async authorize(credentials) {
         // Forward credentials to Express for validation
         const {data} = await Axios.post("/login/user", credentials)
-        
+        console.log(data)
           let user = data.user 
           user.sessionToken = data.user?.authentication.sessionToken
           return user || null

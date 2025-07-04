@@ -34,6 +34,7 @@ const Login = () => {
 
 
   const onSubmit: SubmitHandler<Inputs> = async(data) => {
+    // console.log(data)
      signIn("credentials", {
           userName: data.userInput,
           password : data.pass,

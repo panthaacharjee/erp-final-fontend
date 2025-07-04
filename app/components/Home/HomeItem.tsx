@@ -6,12 +6,12 @@ import { FaRegMoneyBillAlt, FaUserCheck, FaUserEdit } from 'react-icons/fa'
 import Attendence from './Content/Attendence'
 import SalaryCreate from './Content/SalaryCreate'
 
-export const HomeComponent = ({props}:any) => {
+export const HomeComponent = ({props, tab, setTab}:any) => {
     switch(props.element){
         case "tab-Home":
             return <HomeContent/>
         case "user_create":
-            return <UserCreateContent/>
+            return <UserCreateContent props={props} tab={tab} setTab={setTab}/>
         case "attendence":
             return <Attendence/>
         case "salary":

@@ -19,7 +19,6 @@ export interface User {
         url :string
     }
     role: string,
-    salary:number,
     joinDate:Date
     createdAt:Date,
     loginHistory: ILoginHistory[],
@@ -54,6 +53,14 @@ export interface User {
         account:string,
         name :string,
         route:number
+    },
+    salary:{
+      basic:number | null,
+      home:number | null,
+      medical:number | null,
+      convayence:number | null,
+      food:number | null,
+      special:number | null
     }
 }
 
@@ -64,4 +71,13 @@ export interface UserState {
   user: User | null;
   error: string | null;
   success: string | null;
+}
+
+export interface HrUserState{
+  status: boolean;
+  loading: boolean;
+  user: User | null;
+  error: string | null;
+  success: boolean | null;
+  message:string | null;
 }
