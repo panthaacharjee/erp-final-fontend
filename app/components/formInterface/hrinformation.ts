@@ -1,6 +1,8 @@
 export type Usercreateform  ={
     employeeId:string,
     name: string,
+    salary:number,
+    grade:string,
     userName:string,
     email:string,
     basic:number,
@@ -32,4 +34,24 @@ export type Usercreateform  ={
     account:string,
     bankName :string,
     route:number
+}
+
+export type Salarycreateform = {
+    present:number,
+    weekend:number,
+    holidays:number,
+    absent:number,
+    casual:number,
+    sick:number,
+    earn:number,
+    maternity:number,
+    ot_hours:number,
+    ot_rate:number,
+    ot_amount:number,
+    advanced:number,
+    abseentism:number,
+    loan:number,
+    pf:number,
+    others:number,
+    tax:number
 }

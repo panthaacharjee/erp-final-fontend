@@ -8,16 +8,19 @@ import { useDispatch, useSelector } from 'react-redux';
 import Axios from '../../Axios';
 import { RootState } from '@/app/redux/rootReducer';
 import { RemoveTabRequest, RemoveTabSuccess } from '@/app/redux/reducers/tabReducer';
+import { toast } from 'react-toastify';
 
-const UserCreateMenu = ({setValue, setIdDisable, setTabDisable, setChecked, getValues, tab, setTab, props}:any) => {
+const UserCreateMenu = ({setValue, setIdDisable, setTabDisable, setChecked, getValues, tab, setTab, props, id, user}:any) => {
     const dispatch = useDispatch()
     const {items, content} = useSelector((state:RootState)=>state.tab)
 
 
-     const handleRefresh = ()=>{
+    const handleRefresh = ()=>{
       setIdDisable(false)
       setValue('employeeId', 'new')
       setValue('name', "")
+      setValue('grade', '')
+      setValue('salary', 0)
       setValue('userName', '')
       setValue('salary', "")
       setValue('joinDate', new Date().toISOString().split("T")[0] as any)
@@ -44,9 +47,9 @@ const UserCreateMenu = ({setValue, setIdDisable, setTabDisable, setChecked, getV
       setValue('route',  0)
       setValue('basic', 0)
       setValue('home', 0)
-      setValue('medical', 0)
-      setValue('conveyance', 0)
-      setValue('food', 0)
+      setValue('medical', 750)
+      setValue('conveyance', 450)
+      setValue('food', 1250)
       setValue('special',0)
 
       setTabDisable(true)
@@ -62,8 +65,9 @@ const UserCreateMenu = ({setValue, setIdDisable, setTabDisable, setChecked, getV
                   const config={headers:{"Content-Type": "application/json"}}
                   const {data} = await Axios.post(`/register/user`,{
                     id: getValues('employeeId'),
-                    name: getValues('name'), 
-                    salary: parseInt(getValues('salary')), 
+                    name: getValues('name'),
+                    grade:getValues('grade'), 
+                    mainSalary: parseInt(getValues('salary')), 
                     joinDate: getValues('joinDate'), 
                     section: getValues('section'), 
                     category: getValues('category'), 
@@ -100,6 +104,46 @@ const UserCreateMenu = ({setValue, setIdDisable, setTabDisable, setChecked, getV
     }
 
     const handleCloseButton = ()=>{
+      setIdDisable(false)
+      setValue('employeeId', 'new')
+      setValue('name', "")
+      setValue('grade', '')
+      setValue('salary', 0)
+      setValue('userName', '')
+      setValue('salary', "")
+      setValue('joinDate', new Date().toISOString().split("T")[0] as any)
+      setValue('category', "staff")
+      setValue('section', "")
+      setValue('designation', "")
+      setValue('department', "")
+      setValue('vill', "")
+      setValue('thana', "")
+      setValue('post', "")
+      setValue('postCode', 0)
+      setValue('district', '')
+      setValue('father', '')
+      setValue('mother', '')
+      setValue('blood', 'Pick a Group')
+      setValue('nid', '')
+      setValue('dob', new Date(Date.now()))
+      setValue('phone', '')
+      setValue('qualification', '')
+      setValue('nomineeName', '')
+      setValue('relation',  '')
+      setValue('bankName', '')
+      setValue('account', '')
+      setValue('route',  0)
+      setValue('basic', 0)
+      setValue('home', 0)
+      setValue('medical', 750)
+      setValue('conveyance', 450)
+      setValue('food', 1250)
+      setValue('special',0)
+
+      setTabDisable(true)
+      setChecked(false)
+      dispatch(ClearUserSuccess())
+
          dispatch(RemoveTabRequest())
             const data = {
                 loading:false,
@@ -116,11 +160,93 @@ const UserCreateMenu = ({setValue, setIdDisable, setTabDisable, setChecked, getV
                 setTab(items[index-1].id)
             }
     }
+    
+    const handlePrint = async()=>{
+      if(getValues('employeeId')==='new'){
+        toast("EMPLOYEE NOT FOUND")
+      }
+      try {
+        const response = await Axios.get(`/employee/details/${id}`, {
+          responseType: 'blob'
+        });
+
+        
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        
+        // Open in new window with proper null checks
+        const printWindow = window.open(url);
+        
+        if (printWindow) {
+          // Add event listener for when the window loads
+          printWindow.addEventListener('load', () => {
+            // Additional safety check
+            if (!printWindow.closed) {
+              printWindow.print();
+            }
+          }, { once: true });
+          
+          // Fallback in case the load event doesn't fire
+          setTimeout(() => {
+            if (printWindow && !printWindow.closed) {
+              printWindow.print();
+            }
+          }, 1000);
+        } else {
+          // Popup was blocked - use iframe fallback
+          const iframe = document.createElement('iframe');
+          iframe.style.display = 'none';
+          iframe.src = url;
+          document.body.appendChild(iframe);
+          
+          iframe.onload = () => {
+            setTimeout(() => {
+              iframe.contentWindow?.print();
+              // Clean up
+              window.URL.revokeObjectURL(url);
+              document.body.removeChild(iframe);
+            }, 1000);
+          };
+        }
+
+        // Cleanup URL object after printing
+        setTimeout(() => {
+          window.URL.revokeObjectURL(url);
+        }, 10000);
+
+      } catch (err) {
+        console.error('Error handling PDF:', err);
+        // Add user feedback here
+      }
+    }
+    
+    const handleDownload= async()=>{
+      try {
+        const response = await Axios.get(`/employee/details/${id}`, {
+          responseType: 'blob' // Important for binary data
+        });
+        
+        // Create a blob URL for the PDF
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${user?.employeeId}-details.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        
+        // Clean up
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(link);
+      } catch (err) {
+        console.error('Error downloading PDF:', err);
+      }
+    }
+
     useEffect(()=>{
       handleRefresh()
     },[])
   return (
-    <div>
+        <div>
                 <div onClick={handleRefresh} className='bg-[#e0eef2] border-2 border-blue-100 px-3 py-2 rounded-lg flex items-center flex-col cursor-pointer hover:bg-[#96c8dc]'>
                   <p className='text-2xl'><RiRefreshLine/></p>
                   <p className='text-xs mt-1 cursor-pointer'>Refresh</p>
@@ -130,16 +256,16 @@ const UserCreateMenu = ({setValue, setIdDisable, setTabDisable, setChecked, getV
                   <p className='text-xs mt-1 cursor-pointer'>Close</p>
                 </div>
                  <div onClick={handleSaveButton} className='bg-[#e0eef2] border-2 border-blue-100 px-3 py-2 rounded-lg flex items-center flex-col cursor-pointer hover:bg-[#96c8dc] mt-4'>
-                  <div className="tooltip tooltip-left" data-tip="Ctrl + S">
+                  <div className="tooltip tooltip-left" data-tip="Ctrl + S Or Enter">
                     <p className='text-2xl'><IoMdSave/></p>
                     <p className='text-xs mt-1 cursor-pointer'>Save</p>
                   </div>
                 </div>
-                <div className='bg-[#e0eef2] border-2 border-blue-100 px-3 py-2 rounded-lg flex items-center flex-col cursor-pointer hover:bg-[#96c8dc] mt-4'>
+                <div onClick={handlePrint} className='bg-[#e0eef2] border-2 border-blue-100 px-3 py-2 rounded-lg flex items-center flex-col cursor-pointer hover:bg-[#96c8dc] mt-4'>
                   <p className='text-2xl'><IoIosPrint/></p>
                   <p className='text-xs mt-1 cursor-pointer'>Print</p>
                 </div>
-                 <div className='bg-[#e0eef2] border-2 border-blue-100 px-3 py-2 rounded-lg flex items-center flex-col cursor-pointer hover:bg-[#96c8dc] mt-4'>
+                 <div onClick={handleDownload} className='bg-[#e0eef2] border-2 border-blue-100 px-3 py-2 rounded-lg flex items-center flex-col cursor-pointer hover:bg-[#96c8dc] mt-4'>
                   <p className='text-2xl'><LuDownload/></p>
                   <p className='text-xs mt-1 cursor-pointer'>Download</p>
                 </div>

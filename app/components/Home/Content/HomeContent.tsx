@@ -57,7 +57,7 @@ const HomeContent = () => {
             </div>
            <div className='flex items-center justify-between my-2'>
              <p>Date of Birth : </p>
-             <p>{user?.personalInformation?.dob ? DateFormator(user?.personalInformation?.dob as Date, 'full'): DateFormator(new Date(Date.now()), 'half')}</p>
+             <p>{user?.personalInformation?.dob ? DateFormator(user?.personalInformation?.dob as Date, 'none'): DateFormator(new Date(Date.now()), 'half')}</p>
            </div>
             <div className='flex items-center justify-between my-2'>
               <p>Blood Group : </p>
@@ -72,7 +72,7 @@ const HomeContent = () => {
             </div>
             <div className='flex items-center justify-between my-2'>
               <p>Join Date : </p>
-              <p>{user?.joinDate ? DateFormator(new Date(user.joinDate), 'full') : "Not Found"}</p>
+              <p>{user?.joinDate ? DateFormator(new Date(user.joinDate), 'none') : "Not Found"}</p>
             </div>
            <div className='flex items-center justify-between my-2'>
              <p>Section : </p>

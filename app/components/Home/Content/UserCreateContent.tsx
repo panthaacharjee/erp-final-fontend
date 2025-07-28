@@ -24,9 +24,7 @@ const UserCreateContent = ({props, setTab, tab}:any) => {
   console.log(error)
   const [tabDisable, setTabDisable] = useState(true)
   const [checked, setChecked] = useState(false)
-  const [req, setReq] = useState(false)
   const [idDisable,setIdDisable] = useState(false)
-
 
   const {
       register,
@@ -39,30 +37,42 @@ const UserCreateContent = ({props, setTab, tab}:any) => {
   } = useForm<Usercreateform>({
     defaultValues:{
       employeeId:"new",
-      category:'Pick a Category'
+      category:'Pick a Category',
+      medical: 750,
+      conveyance: 450,
+      food: 1250
     }
   })
 
 
+
   const handleSave:SubmitHandler<Usercreateform> = async(dataInput) => {
+    console.log(dataInput)
       try{
           dispatch(ClearUserSuccess())
           dispatch(UserCreateAndUpdateRequest())
          
           const config={headers:{"Content-Type": "application/json"}}
+            const salary = dataInput.salary
+            const salaryBasic = (salary-dataInput.medical-dataInput.conveyance-dataInput.food)/1.5
+            const salaryHome = salaryBasic/2
+            const basic = Math.ceil(salaryBasic)
+            const home = Math.ceil(salaryHome)
+
           const {data} = await Axios.post(`/register/user`,{
             id: dataInput.employeeId,
             name: dataInput.name, 
-            // salary: parseInt(dataInput.salary), 
-            joinDate: dataInput.joinDate, 
+            mainSalary: dataInput.salary, 
+            joinDate: dataInput.joinDate,
+            grade:dataInput.grade, 
             section: dataInput.section, 
             category: dataInput.category, 
             designation: dataInput.designation, 
             department:dataInput.department, 
-            basic:dataInput.basic,
-            home:dataInput.home,
+            basic:basic,
+            home:home,
             medical:dataInput.medical,
-            convayence:dataInput.conveyance,
+            conveyance:dataInput.conveyance,
             food:dataInput.food,
             special:dataInput.special,
             vill: dataInput.vill, 
@@ -114,6 +124,8 @@ const UserCreateContent = ({props, setTab, tab}:any) => {
       setIdDisable(true)
       setValue('employeeId', user?.employeeId ? user.employeeId : 'new')
       setValue('name', user?.name ? user.name : "")
+      setValue('salary', user?.mainSalary ? user?.mainSalary : 0)
+      setValue('grade', user?.grade ? user.grade: '')
       setValue('userName', user?.userName ? user.userName : '')
       setValue('joinDate', user?.joinDate ? new Date(user.joinDate).toISOString().split("T")[0]: new Date().toISOString().split("T")[0] as any)
       setValue('category', user?.category ?  user.category : "Pick a Category")
@@ -139,21 +151,18 @@ const UserCreateContent = ({props, setTab, tab}:any) => {
       setValue('route', user?.bank?.route ?  user.bank.route : 0)
       setValue('basic', user?.salary?.basic? user?.salary.basic : 0)
       setValue('home', user?.salary?.home? user?.salary.home : 0)
-      setValue('medical', user?.salary?.medical? user?.salary.medical : 0)
-      setValue('conveyance', user?.salary?.convayence? user?.salary.convayence : 0)
-      setValue('food', user?.salary?.food? user?.salary.food : 0)
       setValue('special', user?.salary?.special? user?.salary.special : 0)
 
       setTabDisable(false)
       setChecked(true)
-      toast(message)
+      toast.success(message)
       dispatch(ClearSuccess())
     }
     if(error){
       if(error == "getaddrinfo ENOTFOUND ac-shhoh7s-shard-00-00.qzk1nes.mongodb.net"){
         toast("Netowrk Error")
       }else{
-        toast(error)
+        toast.error(error)
       }
       dispatch(ClearUserError())
     }
@@ -169,7 +178,7 @@ const UserCreateContent = ({props, setTab, tab}:any) => {
             <form onSubmit={handleSubmit(handleSave)} className='w-[93%] px-3 pt-12'>
                 <div className="collapse collapse-plus bg-base-100 border border-base-300">
                   <input type="checkbox" name="my-accordion-3" defaultChecked/>
-                  <div className="collapse-title font-semibold">Employee Information (কর্মচারীর তথ্য)</div>
+                  <div className="collapse-title font-semibold">Employee Information (কর্মচারীর তথ্য জানতে আইডি নাম্বার দিয়ে সার্চ দিন) (Example: 2)  </div>
                   <div className="collapse-content text-sm">
                       <div className='flex items-center flex-wrap'>
                         <div className="fieldset w-3/12">
@@ -261,14 +270,32 @@ const UserCreateContent = ({props, setTab, tab}:any) => {
                             {...register("joinDate")}
                           />
                         </div>
+                        <div className="fieldset w-3/12 ">
+                          <legend className="fieldset-legend">Grade (গ্রেড)</legend>
+                          <input 
+                            type="text" 
+                            className="input w-11/12" 
+                            {...register("grade")}
+                            placeholder='Employee Grade'
+                          />
+                        </div>
                       </div>
                   </div>
                 </div>
-                <div className="collapse collapse-plus bg-base-100 border border-base-300">
+                <div className="collapse  bg-base-100 border border-base-300">
                   <input type="checkbox" name="my-accordion-3" disabled={tabDisable} checked={checked} />
                   <div className="collapse-title font-semibold">Salary (বেতন)</div>
                   <div className="collapse-content text-sm">
                       <div className='flex items-center flex-wrap'>
+                        <div className="fieldset w-3/12">
+                          <legend className="fieldset-legend">Salary (বেতন)</legend>
+                          <input 
+                            type="number" 
+                            className="input w-11/12" 
+                            placeholder="Enter Basic Salary" 
+                            {...register('salary')}
+                          />
+                        </div>
                         <div className="fieldset w-3/12">
                           <legend className="fieldset-legend">Basic Salary (মূল বেতন)</legend>
                           <input 
@@ -276,6 +303,7 @@ const UserCreateContent = ({props, setTab, tab}:any) => {
                             className="input w-11/12" 
                             placeholder="Enter Basic Salary" 
                             {...register('basic')}
+                            disabled
                           />
                         </div>
                         <div className="fieldset w-3/12">
@@ -285,6 +313,7 @@ const UserCreateContent = ({props, setTab, tab}:any) => {
                             className="input w-11/12" 
                             placeholder="Enter Home Rent"
                             {...register('home')}
+                            disabled
                           />
                         </div>
                          <div className="fieldset w-3/12">
@@ -295,7 +324,6 @@ const UserCreateContent = ({props, setTab, tab}:any) => {
                             placeholder="Enter Medical Allowence" 
                             {...register('medical')}
                             disabled
-                            value={750}
                           />
                         </div>
                         <div className="fieldset w-3/12">
@@ -305,7 +333,6 @@ const UserCreateContent = ({props, setTab, tab}:any) => {
                             className="input w-11/12" 
                             placeholder="Enter Conveyance Allowence"
                             {...register('conveyance')}
-                            value={450}
                             disabled
                           />
                         </div>
@@ -316,7 +343,6 @@ const UserCreateContent = ({props, setTab, tab}:any) => {
                             className="input w-11/12" 
                             placeholder="Enter Food Allowence"
                             {...register('food')}
-                            value={1250}
                             disabled
                           />
                         </div>
@@ -332,7 +358,7 @@ const UserCreateContent = ({props, setTab, tab}:any) => {
                       </div>
                   </div>
                 </div>
-                <div className="collapse collapse-plus bg-base-100 border border-base-300">
+                <div className="collapse  bg-base-100 border border-base-300">
                   <input type="checkbox" name="my-accordion-3" disabled={tabDisable} checked={checked}/>
                   <div className="collapse-title font-semibold">Personal Information (ব্যাক্তিগত তথ্য)</div>
                   <div className="collapse-content text-sm">
@@ -404,7 +430,7 @@ const UserCreateContent = ({props, setTab, tab}:any) => {
                       </div>
                   </div>
                 </div>
-                <div className="collapse collapse-plus bg-base-100 border border-base-300">
+                <div className="collapse  bg-base-100 border border-base-300">
                   <input type="checkbox" name="my-accordion-3" disabled={tabDisable} checked={checked} />
                   <div className="collapse-title font-semibold">Address (ঠিকানা)</div>
                   <div className="collapse-content text-sm">
@@ -457,7 +483,7 @@ const UserCreateContent = ({props, setTab, tab}:any) => {
                       </div>
                   </div>
                 </div>
-                 <div className="collapse collapse-plus bg-base-100 border border-base-300">
+                 <div className="collapse bg-base-100 border border-base-300">
                   <input type="checkbox" name="my-accordion-3" disabled={tabDisable} checked={checked}/>
                   <div className="collapse-title font-semibold">Bank Information (ব্যাংকের তথ্য)</div>
                   <div className="collapse-content text-sm">
@@ -511,7 +537,7 @@ const UserCreateContent = ({props, setTab, tab}:any) => {
                       </div>
                   </div>
                 </div>
-                 <div className="collapse collapse-plus bg-base-100 border border-base-300">
+                 <div className="collapse bg-base-100 border border-base-300">
                   <input type="checkbox" name="my-accordion-3" disabled={tabDisable} checked={checked}/>
                   <div className="collapse-title font-semibold">Educational Information (শিক্ষাগত তথ্য)</div>
                   <div className="collapse-content text-sm">
@@ -545,6 +571,8 @@ const UserCreateContent = ({props, setTab, tab}:any) => {
                   tab={tab}
                   setTab={setTab}
                   props={props}
+                  id={user?._id}
+                  user={user}
                 />
             </div>
         </div>

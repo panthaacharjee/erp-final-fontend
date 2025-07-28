@@ -43,10 +43,10 @@ export default function RootLayout({
             <QueryProvider>
               <UserProvider>
                 {children}
-                <ToastProvider/>
               </UserProvider>
             </QueryProvider>
           </Session>
+          <ToastProvider/>
         </ReduxProvider>
       </body>
     </html>

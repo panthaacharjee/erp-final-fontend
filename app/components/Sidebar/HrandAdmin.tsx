@@ -30,7 +30,7 @@ const HrandAdmin = ({setSidebar, setSelected, setTab}:any) => {
         setSelected(undefined)
         setSidebar(false)  
         dispatch(AddTabDataRequest())
-        
+        dispatch(ClearUserSuccess())
         const sameTab = items.filter((val:any)=>val.title === dataProps.title)
         if(sameTab.length===0){
             const id = `Tab-${Date.now()}`

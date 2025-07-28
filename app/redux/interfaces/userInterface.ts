@@ -5,10 +5,13 @@ interface ILoginHistory {
 }
 
 export interface User {
-  employeeId:string,
+    _id:string,
+    employeeId?:string,
     name: string,
     userName:string,
+    mainSalary:number,
     email:string,
+    grade:string,
     account:string,
     authentication:{
         password: string,
@@ -58,11 +61,12 @@ export interface User {
       basic:number | null,
       home:number | null,
       medical:number | null,
-      convayence:number | null,
+      conveyance:number | null,
       food:number | null,
       special:number | null
     }
 }
+
 
 export interface UserState {
   isAuthenticated: boolean;
@@ -80,4 +84,7 @@ export interface HrUserState{
   error: string | null;
   success: boolean | null;
   message:string | null;
+
+  users: User[]
+  filterUsers: User[]
 }

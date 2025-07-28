@@ -15,7 +15,7 @@ export const HomeComponent = ({props, tab, setTab}:any) => {
         case "attendence":
             return <Attendence/>
         case "salary":
-            return <SalaryCreate/>
+            return <SalaryCreate props={props} tab={tab}setTab={setTab}/>
         default:
             return <HomeContent/>
     }

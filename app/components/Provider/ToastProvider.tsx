@@ -9,13 +9,14 @@ export default function ToastProvider() {
       position="top-right"
       autoClose={5000}
       hideProgressBar={false}
-      newestOnTop={false}
+      newestOnTop={true}
       closeOnClick
       rtl={false}
       pauseOnFocusLoss
-      draggable
+      draggable={true}
       pauseOnHover
       theme="dark"
+      style={{zIndex: 5000}}
     />
   );
 }

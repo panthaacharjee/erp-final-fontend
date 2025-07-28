@@ -14,6 +14,8 @@ const DateFormator = (props:Date, sys: string)=>{
     });
     if(sys==="full"){
       return `${date}-${month+1}-${year}, ${formattedTime}`
+    }else if(sys==="none"){
+      return `${date} ${monthArray[month]}, ${year}`
     }else{
       return `${date}, ${monthArray[month]} ${year}, ${formattedTime}`
     } 
