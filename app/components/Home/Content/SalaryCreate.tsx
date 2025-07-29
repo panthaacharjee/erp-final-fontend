@@ -297,21 +297,21 @@ const SalaryCreate = ({props, setTab, tab}:any) => {
     const saved = localStorage.getItem('selectedCategories');
     const initialSelectedCategories = saved 
       ? JSON.parse(saved) 
-      : [...categoryArray]; // Default to all categories if nothing in localStorage
+      : [...categoryArray]; 
     setSelectedCategories(initialSelectedCategories);
   }
   if (nameArray.length > 0) {
     const saved = localStorage.getItem('selectedNames');
     const initialSelectedNames = saved 
       ? JSON.parse(saved) 
-      : [...nameArray]; // Default to all categories if nothing in localStorage
+      : [...nameArray]; 
     setSelectedNames(initialSelectedNames);
   }
   if (idArray.length > 0) {
-    const saved = localStorage.getItem('selectedIDs');
+    const saved = localStorage.getItem('selectedIds');
     const initialSelectedIds = saved 
       ? JSON.parse(saved) 
-      : [...idArray]; // Default to all categories if nothing in localStorage
+      : [...idArray];
     setSelectedIds(initialSelectedIds);
   }
 
