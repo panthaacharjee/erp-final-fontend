@@ -86,10 +86,6 @@ const SalaryCreateMenu = ({ tab, setTab, props, selectedItems, salaryPdfDate, us
       }
       
     }
-
-    useEffect(()=>{
-  
-    },[])
   return (
         <div>
                 <div onClick={handleRefresh} className='bg-[#e0eef2] border-2 border-blue-100 px-3 py-2 rounded-lg flex items-center flex-col cursor-pointer hover:bg-[#96c8dc]'>

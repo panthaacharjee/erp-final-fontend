@@ -7,6 +7,8 @@ import { SidebarData } from '../StaticData';
 /* ========== Images ========= */
 import Logo from "../../../images/bandlogo.svg"
 import HrandAdmin from './HrandAdmin';
+import ProductDevelopment from './ProductDevelopment';
+import BusinessDevelopment from './BuissnessDevelopment';
 
 
 const Sidebar = ({setTab}:any) => {
@@ -42,6 +44,8 @@ const Sidebar = ({setTab}:any) => {
         </div>
         {sidebar && <div className={` bg-[#70b5d4] z-50 fixed h-screen  opacity-85 top-0 right-0 w-11/12 text-black`}>
             {selected===2 && <HrandAdmin setSidebar={setSidebar} setSelected={setSelected} setTab={setTab}/>}
+            {selected===3 && <BusinessDevelopment setSidebar={setSidebar} setSelected={setSelected} setTab={setTab}/>}
+            {selected===4 && <ProductDevelopment setSidebar={setSidebar} setSelected={setSelected} setTab={setTab}/>}
         </div>}
     </div>
   )

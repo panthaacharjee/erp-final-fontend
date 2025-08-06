@@ -5,6 +5,16 @@ import UserCreateContent from './Content/UserCreateContent'
 import { FaRegMoneyBillAlt, FaUserCheck, FaUserEdit } from 'react-icons/fa'
 import Attendence from './Content/Attendence'
 import SalaryCreate from './Content/SalaryCreate'
+import ProductCreate from './Content/ProductCreate'
+import SampleProduct from './Content/SampleProduct'
+import ProductApproval from './Content/ProductApproval'
+import { PiHandWithdraw } from "react-icons/pi";
+import { TiSocialDribbbleCircular } from "react-icons/ti";
+import { FcApproval, FcProcess, FcViewDetails } from "react-icons/fc";
+import Organization from './Content/Organization'
+import ProductDetails from './Content/ProductDetails'
+import ProductProcess from './Content/ProductProcess'
+import { IoIosBusiness } from 'react-icons/io'
 
 export const HomeComponent = ({props, tab, setTab}:any) => {
     switch(props.element){
@@ -16,13 +26,25 @@ export const HomeComponent = ({props, tab, setTab}:any) => {
             return <Attendence/>
         case "salary":
             return <SalaryCreate props={props} tab={tab}setTab={setTab}/>
+        case "organization":
+            return <Organization props={props} tab={tab}setTab={setTab}/>
+        case "product_details":
+            return <ProductDetails props={props} tab={tab}setTab={setTab}/>
+        case "product_process":
+            return <ProductProcess />
+        case "product_create":
+            return <ProductCreate/>
+        case "sample_product":
+            return <SampleProduct/>
+        case "product_approval":
+            return <ProductApproval/>
         default:
             return <HomeContent/>
     }
 }
 
 export const HomeIcon = ({props}:any) => {
-    switch(props.element){
+    switch(props){
         case "tab-Home":
             return <TiHome/>
          case "user_create":
@@ -31,7 +53,20 @@ export const HomeIcon = ({props}:any) => {
             return <FaUserCheck/>
         case "salary":
             return <FaRegMoneyBillAlt/>
+        case "organization":
+            return <IoIosBusiness/>
+        case "product_details":
+            return <FcViewDetails/>
+        case "product_process":
+            return <FcProcess/>
+        case "product_create":
+            return <PiHandWithdraw/>
+        case "sample_product":
+            return <TiSocialDribbbleCircular/>
+        case "product_approval":
+            return <FcApproval/>
         default:
             return <TiHome/>
     }
 }
+

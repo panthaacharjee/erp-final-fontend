@@ -368,7 +368,7 @@ const SalaryCreate = ({props, setTab, tab}:any) => {
                       >
                         Salary Sample (Excel)
                       </a></li>
-                      <li><a>Item 2</a></li>
+                      <li><a>Salary Upload Guidence</a></li>
                     </ul>
                   </div>
                 </div>

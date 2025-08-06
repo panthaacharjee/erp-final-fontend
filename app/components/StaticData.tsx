@@ -7,6 +7,7 @@ import { FaClipboardList } from "react-icons/fa";
 import { TbTruckDelivery } from "react-icons/tb";
 import { MdAccountBalance } from "react-icons/md";
 import { GiShop } from "react-icons/gi";
+import { LiaBusinessTimeSolid } from "react-icons/lia";
 
 
 export const SidebarData = [
@@ -21,29 +22,34 @@ export const SidebarData = [
         sl:2,
     },
     {
+        title:"Business <br/> Development",
+        icon: <LiaBusinessTimeSolid/>,
+        sl:3,
+    },
+    {
         title:"Product<br/> Development",
         icon: <MdOutlineEngineering/>,
-        sl:3,
+        sl:4,
     },
     {
         title:"Order<br/> Management",
         icon: <FaClipboardList/>,
-        sl:4,
+        sl:5,
     },
     {
         title:"Dispatch <br/>& Delivery",
         icon: <TbTruckDelivery/>,
-        sl:5
+        sl:6
     },
     {
         title:"Commercial <br/> & Accounts",
         icon: <MdAccountBalance/>,
-        sl:6
+        sl:7
     },
     {
         title:"Inventory",
         icon: <GiShop/>,
-        sl:7
+        sl:8
     },
     
 ]
