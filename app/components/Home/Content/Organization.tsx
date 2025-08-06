@@ -27,27 +27,50 @@ const Organization = ({props, setTab, tab}:any) => {
     setSelectedBuyer(buyer);
   };
 
+  const [selectedVenor, setSelectedVendor] = useState<Vendor | undefined>(undefined);
+  const handleVendorChange = (e:any) => {
+    const vendorTitle = e.target.value;
+    const vendor = selectedBuyer?.vendor?.find(b => b.title === vendorTitle);
+    setSelectedVendor(vendor);
+  };
+
   const [showSelectedBuyer, setShowSelectedBuyer] = useState<Buyer | undefined>(undefined)
   const handleShowBuyerChange = (e:any) => {
-    const buyerTitle = e.target.value;
-    const buyer = organization.find(b => b.title === buyerTitle);
-    setShowSelectedBuyer(buyer)
-    setShowSelectedVendor(undefined)
+      const buyerTitle = e.target.value;
+      if (!buyerTitle) {
+        setShowSelectedBuyer(undefined);
+        setShowSelectedVendor(undefined); // Reset vendor selection
+        setShowSelectedContact(undefined); // Reset contact selection
+        return;
+      }
+      const buyer = organization.find(b => b.title === buyerTitle);
+      setShowSelectedBuyer(buyer);
+      setShowSelectedVendor(undefined); // Clear vendor selection
+      setShowSelectedContact(undefined); // Clear contact selection
   };
 
   const [showSelectedVendor, setShowSelectedVendor] = useState<Vendor | undefined>(undefined)
   const handleShowVendorChange = (e:any) => {
-    const vendorTitle = e.target.value;
-    const venodor = showSelectedBuyer?.vendor?.find(b => b.title === vendorTitle);
-    setShowSelectedVendor(venodor)
+      const vendorTitle = e.target.value;
+      if (!vendorTitle) {
+        setShowSelectedVendor(undefined);
+        setShowSelectedContact(undefined); // Reset contact selection
+        return;
+      }
+      const vendor = showSelectedBuyer?.vendor?.find(b => b.title === vendorTitle);
+      setShowSelectedVendor(vendor);
+      setShowSelectedContact(undefined); // Clear contact selection
   };
 
   const [showSelectedContact, setShowSelectedContact] = useState<Contact | undefined>(undefined)
-  console.log(showSelectedContact)
   const handleShowContactChange = (e:any)=>{
-    const contactName = e.target.value;
-    const foundContact = showSelectedVendor?.contact?.find(c => c.name === contactName);
-    setShowSelectedContact(foundContact);
+      const contactName = e.target.value;
+      if (!contactName) {
+        setShowSelectedContact(undefined);
+        return;
+      }
+      const foundContact = showSelectedVendor?.contact?.find(c => c.name === contactName);
+      setShowSelectedContact(foundContact);
   }
 
   const [firstCheck, setFirstCheck] = useState(true)
@@ -208,7 +231,7 @@ const Organization = ({props, setTab, tab}:any) => {
                           <div className="fieldset w-11/12">
                             <legend className="fieldset-legend">Buyer Name </legend>
                             <select {...vregister("buyer")} className="focus:outline-none focus:ring-0  select">
-                                <option className='hidden'></option>
+                                <option value="" className='hidden'></option>
                                 {organization?.map((val, ind)=>{
                                   return <option key={ind}>{val.title}</option>
                                 })}
@@ -244,19 +267,19 @@ const Organization = ({props, setTab, tab}:any) => {
                             <div className="fieldset w-11/12">
                               <legend className="fieldset-legend">Buyer Name </legend>
                               <select onChange={handleBuyerChange} className="focus:outline-none focus:ring-0  select">
-                                <option className='hidden'></option>
+                                <option value="" className='hidden'></option>
                                 {organization?.map((val, ind)=>{
-                                  return <option key={ind}>{val.title}</option>
+                                  return <option key={ind} value={val.title}>{val.title}</option>
                                 })}
                               </select>
                             </div>
                             <div className="fieldset w-11/12">
                               
                               <legend className="fieldset-legend">Vendor Name </legend>
-                              <select {...cregister("vendor")}  className="focus:outline-none focus:ring-0  select">
-                                  <option className='hidden'></option>
+                              <select value={selectedVenor?.title || ""} {...cregister("vendor")}  onChange={handleVendorChange} className="focus:outline-none focus:ring-0  select">
+                                  <option value="" className='hidden'></option>
                                   {selectedBuyer?.vendor?.map((val, ind)=>{
-                                    return <option key={ind}>{val.title}</option>
+                                    return <option key={ind} value={val.title}>{val.title}</option>
                                   })}
                               </select>
                             </div>
@@ -306,28 +329,28 @@ const Organization = ({props, setTab, tab}:any) => {
                       <div className='flex items-center flex-wrap'>
                         <div className="fieldset w-3/12">
                           <legend className="fieldset-legend">Buyer Name</legend>
-                          <select onChange={handleShowBuyerChange} className="w-11/12 focus:outline-none focus:ring-0  select">
-                              <option className='hidden'></option>
+                          <select value={showSelectedBuyer?.title || ""}  onChange={handleShowBuyerChange} className="w-11/12 focus:outline-none focus:ring-0  select">
+                              <option value="" className='hidden'></option>
                               {organization?.map((val, ind)=>{
-                                return <option key={ind}>{val.title}</option>
+                                return <option key={ind} value={val.title}>{val.title}</option>
                               })}
                           </select>
                         </div>
                         <div className="fieldset w-3/12">
                           <legend className="fieldset-legend">Vendor Name</legend>
-                          <select onChange={handleShowVendorChange} className="w-11/12 focus:outline-none focus:ring-0  select">
-                              <option className='hidden'></option>
+                          <select value={showSelectedVendor?.title || ""} onChange={handleShowVendorChange} className="w-11/12 focus:outline-none focus:ring-0  select">
+                              <option value="" className='hidden'></option>
                               {showSelectedBuyer?.vendor?.map((val, ind)=>{
-                                return <option key={ind}>{val.title}</option>
+                                return <option key={ind} value={val.title}>{val.title}</option>
                               })}
                           </select>
                         </div>
                         <div className="fieldset w-3/12">
                           <legend className="fieldset-legend">Contact Name</legend>
-                          <select onChange={handleShowContactChange}  className="w-11/12 focus:outline-none focus:ring-0  select">
-                              <option className='hidden'></option>
+                          <select value={showSelectedContact?.name || ""} onChange={handleShowContactChange}  className="w-11/12 focus:outline-none focus:ring-0  select">
+                              <option value="" className='hidden'></option>
                               {showSelectedVendor?.contact?.map((val,ind)=>{
-                                return <option key={ind}>{val.name}</option>
+                                return <option key={ind} value={val.name}>{val.name}</option>
                               })}
                           </select>
                         </div>
