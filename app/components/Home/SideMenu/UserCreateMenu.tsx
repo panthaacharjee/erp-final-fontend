@@ -255,7 +255,7 @@ const UserCreateMenu = ({setValue, setIdDisable, setTabDisable, setChecked, getV
                   <p className='text-2xl'><IoMdClose/></p>
                   <p className='text-xs mt-1 cursor-pointer'>Close</p>
                 </div>
-                 <div onClick={handleSaveButton} className='bg-[#e0eef2] border-2 border-blue-100 px-3 py-2 rounded-lg flex items-center flex-col cursor-pointer hover:bg-[#96c8dc] mt-4'>
+                <div onClick={handleSaveButton} className='bg-[#e0eef2] border-2 border-blue-100 px-3 py-2 rounded-lg flex items-center flex-col cursor-pointer hover:bg-[#96c8dc] mt-4'>
                   <div className="tooltip tooltip-left" data-tip="Ctrl + S Or Enter">
                     <p className='text-2xl'><IoMdSave/></p>
                     <p className='text-xs mt-1 cursor-pointer'>Save</p>
