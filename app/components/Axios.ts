@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const url = `https://erp-final-1.onrender.com`;
+// const static = `http://localhost:4000`
 const Axios = axios.create({
-    baseURL:"http://localhost:4000/api/v1"
-})
+  baseURL: `${url}/api/v1`,
+});
 
-export default Axios
+export default Axios;
