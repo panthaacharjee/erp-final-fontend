@@ -1,6 +1,67 @@
-import React from "react";
+import { RootState } from "@/app/redux/rootReducer";
+import React, { useCallback, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import Axios from "../Axios";
+import {
+  process,
+  serial,
+  specification,
+} from "@/app/redux/interfaces/businessInterface";
 
-const AddProcess = () => {
+const AddProcess = ({ productId, productDesc, productLine }: any) => {
+  const dispatch = useDispatch();
+
+  /* ============ GET PRODUCT DETAILS ============ */
+  const { getLine } = useSelector((state: RootState) => state.product_details);
+
+  const Line = getLine.find((val) => val.name === productLine);
+
+  const [selectedProcess, setSelectedProcess] = useState<process | undefined>();
+  const handleProcessChange = (e: any) => {
+    const processName = e.target.value;
+    if (!processName) {
+      setSelectedProcess(undefined);
+      setSelectedSerial(undefined);
+      setSelectedSpec(undefined);
+    }
+
+    const process = Line?.process?.find((b: any) => b.title === processName);
+    if (process) {
+      setSelectedProcess(process);
+      setSelectedSpec(undefined);
+      setSelectedSerial(undefined);
+    }
+  };
+
+  const [selectedSpec, setSelectedSpec] = useState<specification | undefined>();
+  const handleSpecChange = (e: any) => {
+    const specName = e.target.value;
+    if (!specName) {
+      setSelectedSpec(undefined);
+      setSelectedSerial(undefined);
+    }
+
+    const spec = selectedProcess?.spec?.find((b: any) => b.title === specName);
+    if (spec) {
+      setSelectedSpec(spec);
+      setSelectedSerial(undefined);
+    }
+  };
+
+  const [selectedSerial, setSelectedSerial] = useState<serial | undefined>();
+  const handleSerialChange = (e: any) => {
+    const serialName = e.target.value;
+    if (!serialName) {
+      setSelectedSerial(undefined);
+    }
+
+    const serial = selectedSpec?.serial?.find(
+      (b: any) => b.title === serialName
+    );
+    if (serial) {
+      setSelectedSerial(serial);
+    }
+  };
   return (
     <div className="modal-box min-w-4xl">
       <p className="text-center font-bold">ERPAC GROUP LIMITED</p>
@@ -15,74 +76,78 @@ const AddProcess = () => {
           <div className="flex items-center flex-wrap border-[1px] border-[#dfdddd] p-2 rounded-md mt-2">
             <div className="fieldset w-6/12">
               <legend className="fieldset-legend">Product ID</legend>
-              <div className={`input w-11/12 border-red-40 bg-gray-300`}></div>
+              <div className={`input w-11/12 border-red-40 bg-gray-300`}>
+                {productId}
+              </div>
             </div>
             <div className="fieldset w-6/12">
               <legend className="fieldset-legend">Product Description</legend>
-              <div className={`input w-11/12 border-red-40 bg-gray-300`}></div>
+              <div className={`input w-11/12 border-red-40 bg-gray-300`}>
+                {productDesc}
+              </div>
             </div>
             <div className="fieldset w-6/12">
               <legend className="fieldset-legend">Process </legend>
-              <select className="w-11/12 focus:outline-none focus:ring-0  select">
+              <select
+                value={selectedProcess?.title}
+                onChange={handleProcessChange}
+                className="w-11/12 focus:outline-none focus:ring-0  select"
+              >
                 <option value="" className="hidden"></option>
-                <option>Quantity</option>
-                <option>Length</option>
-                <option>Weight</option>
-                <option>Area</option>
-                <option>Volume</option>
-                <option>Speed</option>
-                <option>Temparature</option>
-                <option>Time</option>
-                <option>Data</option>
-                <option>Electricity</option>
+                {Line?.process?.map((val, ind) => {
+                  return (
+                    <option key={ind} value={val.title}>
+                      {val.title}
+                    </option>
+                  );
+                })}
               </select>
             </div>
             <div className="fieldset w-6/12">
               <legend className="fieldset-legend">Specification</legend>
-              <select className="w-11/12 focus:outline-none focus:ring-0  select">
+              <select
+                value={selectedSpec?.title}
+                onChange={handleSpecChange}
+                className="w-11/12 focus:outline-none focus:ring-0  select"
+              >
                 <option value="" className="hidden"></option>
-                <option>Quantity</option>
-                <option>Length</option>
-                <option>Weight</option>
-                <option>Area</option>
-                <option>Volume</option>
-                <option>Speed</option>
-                <option>Temparature</option>
-                <option>Time</option>
-                <option>Data</option>
-                <option>Electricity</option>
+                {selectedProcess?.spec?.map((val, ind) => {
+                  return (
+                    <option key={ind} value={val.title}>
+                      {val.title}
+                    </option>
+                  );
+                })}
               </select>
             </div>
             <div className="fieldset w-6/12">
               <legend className="fieldset-legend">Serial</legend>
-              <select className="w-11/12 focus:outline-none focus:ring-0  select">
+              <select
+                value={selectedSerial?.title}
+                onChange={handleSerialChange}
+                className="w-11/12 focus:outline-none focus:ring-0  select"
+              >
                 <option value="" className="hidden"></option>
-                <option>Quantity</option>
-                <option>Length</option>
-                <option>Weight</option>
-                <option>Area</option>
-                <option>Volume</option>
-                <option>Speed</option>
-                <option>Temparature</option>
-                <option>Time</option>
-                <option>Data</option>
-                <option>Electricity</option>
+                {selectedSpec?.serial?.map((val, ind) => {
+                  return (
+                    <option key={ind} value={val.title}>
+                      {val.title}
+                    </option>
+                  );
+                })}
               </select>
             </div>
             <div className="fieldset w-6/12">
               <legend className="fieldset-legend">Process Value</legend>
               <select className="w-11/12 focus:outline-none focus:ring-0  select">
                 <option value="" className="hidden"></option>
-                <option>Quantity</option>
-                <option>Length</option>
-                <option>Weight</option>
-                <option>Area</option>
-                <option>Volume</option>
-                <option>Speed</option>
-                <option>Temparature</option>
-                <option>Time</option>
-                <option>Data</option>
-                <option>Electricity</option>
+                {selectedSerial?.item?.map((val, ind) => {
+                  return (
+                    <option key={ind} value={val.title}>
+                      {val.title}
+                    </option>
+                  );
+                })}
               </select>
             </div>
             <div className="fieldset w-6/12">

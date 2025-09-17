@@ -41,6 +41,7 @@ export interface line {
   code: string;
   others: string;
   category?: category[];
+  process?: process[];
 }
 
 export interface category {
@@ -75,14 +76,17 @@ export interface productDetailState {
 
 export interface process {
   title: string;
+  spec?: specification[];
 }
 
 export interface specification {
   title: string;
+  serial?: serial[];
 }
 
 export interface serial {
   title: string;
+  item?: item[];
 }
 
 export interface item {

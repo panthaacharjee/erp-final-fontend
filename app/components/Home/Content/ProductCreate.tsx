@@ -45,6 +45,31 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
   /* =========== ADD PROCESS SHOW ============= */
   const handleShowAddProcess = (e: any) => {
     e.preventDefault();
+
+    const validateWithRegex = (pid: string) => {
+      const pattern = /^PID\/\d{4}\/\d{5}$/;
+      return pattern.test(pid);
+    };
+
+    const p_id = getValues("p_id");
+    const productLine = watch("line");
+    const productDesc = watch("desc");
+
+    if (validateWithRegex(p_id) === false) {
+      return toast.error("NEED VALID PID");
+    }
+    if (idDisable === false) {
+      return toast.error("PLEASE ENTER A VALID PID NUMBER THEN PRESS ENTER");
+    }
+
+    if (productLine === undefined || productLine === "") {
+      return toast.error("NEED A PRODUCT LINE");
+    }
+
+    if (productDesc === "") {
+      return toast.error("NEED PRODUCT DESCRIPTION");
+    }
+
     const modal = document.getElementById("my_modal_2");
     if (modal) {
       // Check if element exists
@@ -74,17 +99,52 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
       if (dataInput.buyer === "") {
         return setFocus("buyer");
       }
-      if (dataInput.vendor === "") {
-        return setFocus("vendor");
-      }
-      if (dataInput.contact === "") {
-        return setFocus("contact");
-      }
       if (dataInput.sales === "") {
         return setFocus("sales");
       }
-      console.log(dataInput.p_id);
+      try {
+        dispatch(ProductRequest());
+        const userData = {
+          p_id: dataInput.p_id,
+          recieve: dataInput.recieve,
+          buyer: dataInput.buyer,
+          vendor: dataInput.vendor,
+          contact: dataInput.contact,
+          sales: dataInput.sales,
+          line: dataInput.line,
+          category: dataInput.category,
+          desc: dataInput.desc,
+          ref: dataInput.ref,
+          code: dataInput.code,
+          hs_code: dataInput.hs_code,
+          height: parseFloat(dataInput.height as unknown as string) || 0,
+          width: parseFloat(dataInput.width as unknown as string) || 0,
+          length: parseFloat(dataInput.length as unknown as string) || 0,
+          dimension_unit: dataInput.dimension_unit,
+          page_part: dataInput.page_part,
+          set: dataInput.set,
+          weight: parseFloat(dataInput.weight as unknown as string) || 0,
+          weight_per_pcs: dataInput.weight_per_pcs,
+          weight_unit: dataInput.weight_unit,
+          order_unit: dataInput.order_unit,
+          moq: parseInt(dataInput.moq as unknown as string) || 0,
+          moq_unit: dataInput.moq_unit,
+          last_price: dataInput.last_price,
+          currency: dataInput.currency,
+          full_part: parseFloat(dataInput.full_part as unknown as string) || 0,
+          half_part: parseFloat(dataInput.half_part as unknown as string) || 0,
+          price_unit: dataInput.price_unit,
+          sample_date: dataInput.sample_date,
+          comments: dataInput.comments,
+        };
+        const { data } = await Axios.post("/create/product", userData);
+
+        dispatch(ProductSuccess(data));
+      } catch (err: any) {
+        dispatch(ProductFail(err.response.data.message));
+      }
     } else {
+      console.log(dataInput);
       try {
         dispatch(ProductRequest());
         const userData = {
@@ -248,7 +308,6 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
         phandleSubmit(handleSave)();
       }
     };
-
     getOrganization();
     getProductLine();
     window.addEventListener("keydown", handleKeyDown);
@@ -258,6 +317,20 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
   useEffect(() => {
     if (productSuccess) {
       toast.success(productSuccess);
+    }
+
+    if (productError) toast.error(productError);
+
+    dispatch(ClearProductSuccess());
+    dispatch(ClearProductError());
+
+    if (watch("price_unit") !== "Set") {
+      setValue("half_part", NaN);
+    }
+  }, [productSuccess, productError]);
+
+  useEffect(() => {
+    if (product) {
       setIdDisable(true);
       setValue("p_id", product?.p_id ? product.p_id : "New");
 
@@ -318,16 +391,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
       setValue("half_part", product?.price.half_part || NaN);
       setValue("comments", product?.sample_submission.buyer_comment || "");
     }
-
-    if (productError) toast.error(productError);
-
-    dispatch(ClearProductSuccess());
-    dispatch(ClearProductError());
-
-    if (watch("price_unit") !== "Set") {
-      setValue("half_part", NaN);
-    }
-  }, [productSuccess, productError]);
+  }, [product]);
 
   return (
     <div className="flex  relative bg-white">
@@ -343,6 +407,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
               className="input w-full"
               {...productRegister("p_id")}
               disabled={idDisable}
+              defaultValue={"New"}
             />
           </div>
           <div className="w-3/12">
@@ -392,7 +457,10 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                   <div className="fieldset w-3/12">
                     <legend className="fieldset-legend">Vendor Name</legend>
                     <select
-                      value={showSelectedVendor?.title || ""}
+                      value={
+                        showSelectedVendor?.title ||
+                        (product ? product.contactDetails.vendor : "")
+                      }
                       onChange={handleShowVendorChange}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
                     >
@@ -495,7 +563,10 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       Product Category
                     </legend>
                     <select
-                      value={selectedCategory || ""}
+                      value={
+                        selectedCategory ||
+                        (product ? product.product.category : "")
+                      }
                       onChange={handleCategoryChange}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
                     >
@@ -846,10 +917,15 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
           product={product}
           setShowSelectedVendor={setShowSelectedVendor}
           setShowSelectedContact={setShowSelectedContact}
+          setSelectedCategory={setSelectedCategory}
         />
       </div>
       <dialog id="my_modal_2" className="modal w-full">
-        <AddProcess />
+        <AddProcess
+          productId={getValues("p_id")}
+          productDesc={getValues("desc")}
+          productLine={getValues("line")}
+        />
         <form method="dialog" className="modal-backdrop">
           <button>close</button>
         </form>

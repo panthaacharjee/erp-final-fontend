@@ -24,12 +24,12 @@ const ProductCreateMenu = ({
   setIdDisable,
   setShowSelectedVendor,
   setShowSelectedContact,
+  setSelectedCategory,
   getValues,
   tab,
   setTab,
   props,
   setFocus,
-  product,
 }: any) => {
   const dispatch = useDispatch();
   const { items, content } = useSelector((state: RootState) => state.tab);
@@ -37,7 +37,6 @@ const ProductCreateMenu = ({
   const handleRefresh = () => {
     setIdDisable(false);
     setValue("p_id", "New");
-
     setValue(
       "recieve",
       new Date(Date.now()).toISOString().split("T")[0] as any
@@ -50,7 +49,6 @@ const ProductCreateMenu = ({
       "sample_date",
       new Date(Date.now()).toISOString().split("T")[0] as any
     );
-
     setValue("buyer", "");
     setValue("vendor", "");
     setValue("contact", "");
@@ -81,6 +79,7 @@ const ProductCreateMenu = ({
 
     setShowSelectedContact(undefined);
     setShowSelectedVendor(undefined);
+    setSelectedCategory(undefined);
 
     dispatch(ClearProductRefresh());
   };
@@ -89,12 +88,6 @@ const ProductCreateMenu = ({
     if (getValues("p_id") === "New") {
       if (getValues("buyer") === "") {
         return setFocus("buyer");
-      }
-      if (getValues("vendor") === "") {
-        return setFocus("vendor");
-      }
-      if (getValues("contact") === "") {
-        return setFocus("contact");
       }
       if (getValues("sales") === "") {
         return setFocus("sales");
@@ -197,6 +190,7 @@ const ProductCreateMenu = ({
 
     setShowSelectedContact(undefined);
     setShowSelectedVendor(undefined);
+    setSelectedCategory(undefined);
 
     dispatch(ClearProductSuccess());
     dispatch(RemoveTabRequest());
@@ -291,9 +285,8 @@ const ProductCreateMenu = ({
     // }
   };
 
-  useEffect(() => {
-    handleRefresh();
-  }, []);
+  useEffect(() => {}, []);
+
   return (
     <div>
       <div
@@ -355,3 +348,22 @@ const ProductCreateMenu = ({
 };
 
 export default ProductCreateMenu;
+
+// import React from "react";
+
+// const ProductCreateMenu = ({
+//   setValue,
+//   setIdDisable,
+//   setShowSelectedVendor,
+//   setShowSelectedContact,
+//   getValues,
+//   tab,
+//   setTab,
+//   props,
+//   setFocus,
+//   product,
+// }: any) => {
+//   return <div></div>;
+// };
+
+// export default ProductCreateMenu;
