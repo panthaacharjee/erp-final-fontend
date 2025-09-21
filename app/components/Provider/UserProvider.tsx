@@ -1,56 +1,63 @@
-"use client"
-import { useSession } from 'next-auth/react'
-import React, { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { RootState } from '../../redux/rootReducer'
-import { LoadUserRequest, LoadUserSuccess, LoadUserFail } from '../../redux/reducers/userReducer'
-import Axios from '../Axios'
-import Processing from '../Processing'
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-interface Props{
-    children: React.ReactNode
+"use client";
+import { useSession } from "next-auth/react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../redux/rootReducer";
+import {
+  LoadUserRequest,
+  LoadUserSuccess,
+  LoadUserFail,
+} from "../../redux/reducers/userReducer";
+import Axios from "../Axios";
+import Processing from "../Processing";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+interface Props {
+  children: React.ReactNode;
 }
-const UserProvider = ({children}:Props) => {
-    const dispatch = useDispatch()
-    const {items, content} = useSelector((state:RootState)=>state.tab)
+const UserProvider = ({ children }: Props) => {
+  const dispatch = useDispatch();
+  const { items, content } = useSelector((state: RootState) => state.tab);
 
-    const {data:session, status} = useSession()
-    const {user, isAuthenticated} = useSelector((state:RootState)=>state.user)
-    const userFunc = async()=>{
-        try{
-            dispatch(LoadUserRequest())
-            const {data} = await Axios.get("/user/profile",{
-                headers:{
-                    Authorization:`Bearer ${session?.user.id}`
-                }
-            })
-            dispatch(LoadUserSuccess(data.user))
-        }catch(err:any){
-            dispatch(LoadUserFail(""))
-        }
+  const { data: session, status } = useSession();
+
+  const userFunc = async () => {
+    try {
+      dispatch(LoadUserRequest());
+      const { data } = await Axios.get("/user/profile", {
+        headers: {
+          Authorization: `Bearer ${session?.user.id}`,
+        },
+      });
+      dispatch(LoadUserSuccess(data.user));
+    } catch (err: any) {
+      dispatch(LoadUserFail(""));
     }
+  };
 
-   
-    useEffect(()=>{
-        if(status === "authenticated"){
-            userFunc()
-            if(items.length<=1 && content.length<=1){
-                const data = {
-                    loading:false,
-                    items,
-                    content
-                }
-                localStorage.setItem("tabData", JSON.stringify(data))
-            }
-        }
-    },[  items, content, status])
-
-    if(status==="loading"){
-        return <Processing/>
+  useEffect(() => {
+    if (status === "authenticated") {
+      userFunc();
+      if (items.length <= 1 && content.length <= 1) {
+        const data = {
+          loading: false,
+          items,
+          content,
+        };
+        localStorage.setItem("tabData", JSON.stringify(data));
+      }
     }
-  return <div>{children}<ToastContainer/></div>
-  
-}
+  }, [items, content, status]);
 
-export default UserProvider
+  if (status === "loading") {
+    return <Processing />;
+  }
+  return (
+    <div>
+      {children}
+      <ToastContainer />
+    </div>
+  );
+};
+
+export default UserProvider;

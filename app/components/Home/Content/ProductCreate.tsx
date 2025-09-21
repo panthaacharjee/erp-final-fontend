@@ -36,11 +36,17 @@ import ProductCreateMenu from "../SideMenu/ProductCreateMenu";
 
 const ProductCreate = ({ props, setTab, tab }: any) => {
   const dispatch = useDispatch();
-  const { productLoading, productSuccess, productError, product } = useSelector(
-    (state: RootState) => state.product
-  );
+  const {
+    productLoading,
+    productSuccess,
+    productError,
+    processSuccess,
+    product,
+  } = useSelector((state: RootState) => state.product);
 
   const [idDisable, setIdDisable] = useState(false);
+
+  const [productProcess, setProductProcess] = useState(false);
 
   /* =========== ADD PROCESS SHOW ============= */
   const handleShowAddProcess = (e: any) => {
@@ -301,6 +307,8 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
     }
   }, [dispatch]);
 
+  /* ================= PROCESS SORT ================ */
+
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
@@ -332,6 +340,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
   useEffect(() => {
     if (product) {
       setIdDisable(true);
+      setProductProcess(product?.process.length > 0 ? true : false);
       setValue("p_id", product?.p_id ? product.p_id : "New");
 
       setValue(
@@ -633,9 +642,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
             </div>
             <div className="collapse collapse-plus bg-base-100 border border-base-300 mt-4">
               <input type="checkbox" name="my-accordion-3" defaultChecked />
-              <div className="collapse-title font-semibold">
-                Product Dimension
-              </div>
+              <div className="collapse-title font-semibold">Product</div>
               <div className="collapse-content text-sm">
                 <div className="flex items-center flex-wrap">
                   <div className="fieldset w-3/12">
@@ -705,16 +712,8 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       <option value={"false"}>No</option>
                     </select>
                   </div>
-                </div>
-              </div>
-            </div>
-            <div className="collapse collapse-plus bg-base-100 border border-base-300 mt-4">
-              <input type="checkbox" name="my-accordion-3" defaultChecked />
-              <div className="collapse-title font-semibold">Product Weight</div>
-              <div className="collapse-content text-sm">
-                <div className="flex items-center flex-wrap">
                   <div className="fieldset w-3/12">
-                    <legend className="fieldset-legend">No of Pcs</legend>
+                    <legend className="fieldset-legend">Weight Per Pcs</legend>
                     <select
                       {...productRegister("weight_per_pcs")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
@@ -735,7 +734,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                     />
                   </div>
                   <div className="fieldset w-3/12">
-                    <legend className="fieldset-legend">Unit Type</legend>
+                    <legend className="fieldset-legend">Weight Unit</legend>
                     <select
                       {...productRegister("weight_unit")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
@@ -753,7 +752,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
               </div>
             </div>
             <div className="collapse collapse-plus bg-base-100 border border-base-300 mt-4">
-              <input type="checkbox" name="my-accordion-3" defaultChecked />
+              <input type="checkbox" name="my-accordion-3" />
               <div className="collapse-title font-semibold">Order Quantity</div>
               <div className="collapse-content text-sm">
                 <div className="flex items-center flex-wrap">
@@ -800,7 +799,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
               </div>
             </div>
             <div className="collapse collapse-plus bg-base-100 border border-base-300 mt-4">
-              <input type="checkbox" name="my-accordion-3" defaultChecked />
+              <input type="checkbox" name="my-accordion-3" />
               <div className="collapse-title font-semibold">Product Price</div>
               <div className="collapse-content text-sm">
                 <div className="flex items-center flex-wrap">
@@ -865,7 +864,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
               </div>
             </div>
             <div className="collapse collapse-plus bg-base-100 border border-base-300 mt-4">
-              <input type="checkbox" name="my-accordion-3" defaultChecked />
+              <input type="checkbox" name="my-accordion-3" />
               <div className="collapse-title font-semibold">
                 Sample Submission Details
               </div>
@@ -901,7 +900,63 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
             >
               Add Process
             </button>
-            <div className="border border-black w-full min-h-96 mt-3 rounded-md"></div>
+            <div className="border border-black w-full h-96 mt-3 rounded-md px-4 py-3 overflow-y-auto scroll-auto">
+              {productProcess &&
+                product?.process.map((val: any, ind: any) => {
+                  const groupedSpec = val.spec.reduce(
+                    (groups: any[], item: any) => {
+                      const existingGroup = groups.find(
+                        (group) => group.name === item.name
+                      );
+                      if (existingGroup) {
+                        existingGroup.items.push(item);
+                      } else {
+                        groups.push({ name: item.name, items: [item] });
+                      }
+                      return groups;
+                    },
+                    []
+                  );
+
+                  // Flatten the groups back into an array
+                  const sortedSpec = groupedSpec.flatMap(
+                    (group: any) => group.items
+                  );
+                  return (
+                    <div key={ind} className="mb-3">
+                      <div className="">
+                        <h4 className="pb-1 text-sm font-bold uppercase">
+                          {val.name}
+                        </h4>
+                        <div className="border-[1px] border-black"></div>
+                      </div>
+                      <div>
+                        {sortedSpec.map((specItem: any, specIndex: any) => {
+                          return (
+                            <div className="mt-2" key={specIndex}>
+                              <p className="text-xs">
+                                <span className="mr-1">{specIndex + 1})</span>
+                                <span className=" font-bold   rounded-2xl">
+                                  {specItem.name}
+                                </span>
+                                :
+                                <span className="ml-1">
+                                  {specItem.value} {specItem.item}
+                                </span>
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+
+            <button className="mt-5 w-full border border-black rounded-sm px-4 py-2 text-sm font-bold bg-blue-100 cursor-pointer">
+              Add Sample
+            </button>
+            <div className="border border-black w-full h-96 mt-3 rounded-md px-4 py-3 overflow-y-auto scroll-auto"></div>
           </div>
         </div>
       </form>
@@ -911,12 +966,15 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
           setValue={setValue}
           setFocus={setFocus}
           setIdDisable={setIdDisable}
+          setProductProcess={setProductProcess}
           tab={tab}
           setTab={setTab}
           props={props}
           product={product}
+          setShowSelectedBuyer={setShowSelectedBuyer}
           setShowSelectedVendor={setShowSelectedVendor}
           setShowSelectedContact={setShowSelectedContact}
+          setSelectedLine={setSelectedLine}
           setSelectedCategory={setSelectedCategory}
         />
       </div>

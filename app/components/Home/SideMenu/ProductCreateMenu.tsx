@@ -22,8 +22,11 @@ import {
 const ProductCreateMenu = ({
   setValue,
   setIdDisable,
+  setProductProcess,
+  setShowSelectedBuyer,
   setShowSelectedVendor,
   setShowSelectedContact,
+  setSelectedLine,
   setSelectedCategory,
   getValues,
   tab,
@@ -36,6 +39,7 @@ const ProductCreateMenu = ({
 
   const handleRefresh = () => {
     setIdDisable(false);
+    setProductProcess(false);
     setValue("p_id", "New");
     setValue(
       "recieve",
@@ -77,11 +81,13 @@ const ProductCreateMenu = ({
     setValue("half_part", NaN);
     setValue("comments", "");
 
+    setShowSelectedBuyer(undefined);
     setShowSelectedContact(undefined);
     setShowSelectedVendor(undefined);
+    setSelectedLine(undefined);
     setSelectedCategory(undefined);
 
-    dispatch(ClearProductRefresh());
+    // dispatch(ClearProductRefresh());
   };
 
   const handleSaveButton = async () => {
@@ -145,6 +151,7 @@ const ProductCreateMenu = ({
 
   const handleCloseButton = () => {
     setIdDisable(false);
+    setProductProcess(false);
     setValue("p_id", "New");
 
     setValue(
@@ -188,11 +195,13 @@ const ProductCreateMenu = ({
     setValue("half_part", NaN);
     setValue("comments", "");
 
+    setShowSelectedBuyer(undefined);
     setShowSelectedContact(undefined);
     setShowSelectedVendor(undefined);
+    setSelectedLine(undefined);
     setSelectedCategory(undefined);
 
-    dispatch(ClearProductSuccess());
+    // dispatch(ClearProductRefresh());
     dispatch(RemoveTabRequest());
     const data = {
       loading: false,

@@ -78,7 +78,7 @@ const ProductProcess = ({ props, setTab, tab }: any) => {
     const lineName = e.target.value;
 
     const line = getLine?.find((b) => b.name === lineName);
-    setSpecificationLine(line);
+    setSpecificationLine(line as any);
     setSpecificationProcess(undefined);
   };
 
@@ -102,7 +102,7 @@ const ProductProcess = ({ props, setTab, tab }: any) => {
     const lineName = e.target.value;
 
     const line = getLine?.find((b) => b.name === lineName);
-    setSerialLine(line);
+    setSerialLine(line as any);
     setSerialProcess(undefined);
   };
 
@@ -137,7 +137,7 @@ const ProductProcess = ({ props, setTab, tab }: any) => {
     const lineName = e.target.value;
 
     const line = getLine?.find((b) => b.name === lineName);
-    setItemLine(line);
+    setItemLine(line as any);
     setItemProcess(undefined);
     setItemSpec(undefined);
     setItemSerial(undefined);
@@ -187,7 +187,7 @@ const ProductProcess = ({ props, setTab, tab }: any) => {
     const lineName = e.target.value;
 
     const line = getLine?.find((b) => b.name === lineName);
-    setShowLine(line);
+    setShowLine(line as any);
     setShowProcess(undefined);
     setShowSpec(undefined);
     setShowSerial(undefined);
@@ -302,7 +302,7 @@ const ProductProcess = ({ props, setTab, tab }: any) => {
   const getProductLine = async () => {
     try {
       dispatch(GetProductLineRequest());
-      const { data } = await Axios.post("/get/product/line");
+      const { data } = await Axios.get("/get/product/line");
       dispatch(GetProductLineSuccess(data.line));
     } catch (err: any) {
       dispatch(GetProductLineFail(err.response.data.message));
@@ -349,10 +349,8 @@ const ProductProcess = ({ props, setTab, tab }: any) => {
 
     dispatch(ClearItemSuccess());
     dispatch(ClearItemError());
-
-    getProductLine();
   }, [
-    getLine,
+    // getLine,
     processSuccess,
     processError,
     specSuccess,
@@ -362,6 +360,10 @@ const ProductProcess = ({ props, setTab, tab }: any) => {
     itemSuccess,
     itemError,
   ]);
+
+  useEffect(() => {
+    getProductLine();
+  }, []);
 
   return (
     <div className="flex  relative">

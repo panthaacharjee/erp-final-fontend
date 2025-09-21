@@ -40,6 +40,23 @@ export type IProduct = {
   comments: string;
 };
 
+export type IProcess = {
+  process: string;
+  spec: string;
+  serial: string;
+  value: string;
+};
+
+export interface IProcessGet {
+  name: string;
+  spec: [
+    {
+      name: string;
+      serial: string;
+      value: string;
+    }
+  ];
+}
 export interface IGetProduct {
   p_id: string;
   recieve: string;
@@ -92,12 +109,21 @@ export interface IGetProduct {
     date: Date;
     buyer_comment: string;
   };
+  process: IProcessGet[];
 }
 
 export interface productState {
   productLoading: boolean;
   productSuccess: string | null;
   productError: string | null;
+
+  processLoading: boolean;
+  processSuccess: string | null;
+  processError: string | null;
+
+  upDownLoading: boolean;
+  upDownSuccess: string | null;
+  upDownError: string | null;
 
   product: IGetProduct | null;
 }
