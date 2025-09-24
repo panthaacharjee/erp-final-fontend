@@ -80,6 +80,13 @@ const productSlice = createSlice({
       state.upDownLoading = false;
       state.upDownError = action.payload;
     },
+
+    ClearUpDownSuccess(state) {
+      state.upDownSuccess = null;
+    },
+    ClearUpDownFail(state) {
+      state.upDownError = null;
+    },
   },
 });
 
@@ -99,6 +106,12 @@ export const {
 
   ClearProcessProductError,
   ClearProcessProductSuccess,
+
+  UpDownProcessRequest,
+  UpDownProcessSuccess,
+  UpDownProcessFail,
+  ClearUpDownSuccess,
+  ClearUpDownFail,
 } = productSlice.actions;
 
 export const productReducer = productSlice.reducer;

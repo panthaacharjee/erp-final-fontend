@@ -49,6 +49,8 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
   const [productProcess, setProductProcess] = useState(false);
 
   /* =========== ADD PROCESS SHOW ============= */
+  const [showProcessActive, setShowProcessActive] = useState(true);
+
   const handleShowAddProcess = (e: any) => {
     e.preventDefault();
 
@@ -78,8 +80,15 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
 
     const modal = document.getElementById("my_modal_2");
     if (modal) {
-      // Check if element exists
-      (modal as HTMLDialogElement).showModal(); // Type assertion for `showModal()`
+      (modal as HTMLDialogElement).showModal();
+      setShowProcessActive(false);
+
+      const handleModalClose = () => {
+        setShowProcessActive(true);
+        modal.removeEventListener("close", handleModalClose);
+      };
+
+      modal.addEventListener("close", handleModalClose);
     } else {
       console.error("Modal element not found!");
     }
@@ -150,7 +159,6 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
         dispatch(ProductFail(err.response.data.message));
       }
     } else {
-      console.log(dataInput);
       try {
         dispatch(ProductRequest());
         const userData = {
@@ -307,20 +315,20 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
     }
   }, [dispatch]);
 
-  /* ================= PROCESS SORT ================ */
-
   useEffect(() => {
-    const handleKeyDown = async (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-        e.preventDefault();
-        phandleSubmit(handleSave)();
-      }
-    };
-    getOrganization();
-    getProductLine();
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [phandleSubmit]);
+    if (showProcessActive === true) {
+      const handleKeyDown = async (e: KeyboardEvent) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+          e.preventDefault();
+
+          phandleSubmit(handleSave)();
+        }
+      };
+
+      window.addEventListener("keydown", handleKeyDown);
+      return () => window.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [showProcessActive]);
 
   useEffect(() => {
     if (productSuccess) {
@@ -402,6 +410,16 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
     }
   }, [product]);
 
+  useEffect(() => {
+    if (organization) {
+      getOrganization();
+    }
+    if (getLine) {
+      getProductLine();
+    }
+  }, []);
+  console.log(organization, getLine);
+
   return (
     <div className="flex  relative bg-white">
       {productLoading && <Processing />}
@@ -453,7 +471,19 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       onChange={handleShowBuyerChange}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
                     >
-                      <option value="" className="hidden"></option>
+                      {organization ? (
+                        <option value="" className="hidden"></option>
+                      ) : (
+                        <option
+                          value={
+                            product?.contactDetails.buyer &&
+                            product.contactDetails.buyer
+                          }
+                        >
+                          {product?.contactDetails.buyer &&
+                            product.contactDetails.buyer}
+                        </option>
+                      )}
                       {organization?.map((val, ind) => {
                         return (
                           <option key={ind} value={val.title}>
@@ -902,16 +932,16 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
             </button>
             <div className="border border-black w-full h-96 mt-3 rounded-md px-4 py-3 overflow-y-auto scroll-auto">
               {productProcess &&
-                product?.process.map((val: any, ind: any) => {
-                  const groupedSpec = val.spec.reduce(
+                product?.process?.map((val: any, ind: any) => {
+                  const groupedSpec = val?.spec?.reduce(
                     (groups: any[], item: any) => {
-                      const existingGroup = groups.find(
-                        (group) => group.name === item.name
+                      const existingGroup = groups?.find(
+                        (group) => group?.name === item?.name
                       );
                       if (existingGroup) {
-                        existingGroup.items.push(item);
+                        existingGroup?.items?.push(item);
                       } else {
-                        groups.push({ name: item.name, items: [item] });
+                        groups?.push({ name: item?.name, items: [item] });
                       }
                       return groups;
                     },
@@ -919,29 +949,27 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                   );
 
                   // Flatten the groups back into an array
-                  const sortedSpec = groupedSpec.flatMap(
-                    (group: any) => group.items
+                  const sortedSpec = groupedSpec?.flatMap(
+                    (group: any) => group?.items
                   );
                   return (
                     <div key={ind} className="mb-3">
                       <div className="">
-                        <h4 className="pb-1 text-sm font-bold uppercase">
-                          {val.name}
-                        </h4>
+                        <h4 className="pb-1 text-sm font-bold ">{val?.name}</h4>
                         <div className="border-[1px] border-black"></div>
                       </div>
                       <div>
-                        {sortedSpec.map((specItem: any, specIndex: any) => {
+                        {sortedSpec?.map((specItem: any, specIndex: any) => {
                           return (
                             <div className="mt-2" key={specIndex}>
                               <p className="text-xs">
                                 <span className="mr-1">{specIndex + 1})</span>
                                 <span className=" font-bold   rounded-2xl">
-                                  {specItem.name}
+                                  {specItem?.name}
                                 </span>
                                 :
                                 <span className="ml-1">
-                                  {specItem.value} {specItem.item}
+                                  {specItem?.value} {specItem?.item}
                                 </span>
                               </p>
                             </div>

@@ -12,9 +12,14 @@ import { IProcess } from "@/app/redux/interfaces/productInterface";
 import {
   ClearProcessProductError,
   ClearProcessProductSuccess,
+  ClearUpDownFail,
+  ClearUpDownSuccess,
   CreateProductProcessFail,
   CreateProductProcessRequest,
   CreateProductProcessSucess,
+  UpDownProcessFail,
+  UpDownProcessRequest,
+  UpDownProcessSuccess,
 } from "@/app/redux/reducers/productReducer";
 import { toast } from "react-toastify";
 
@@ -25,7 +30,8 @@ const AddProcess = ({ productId, productDesc, productLine }: any) => {
     processLoading,
     processSuccess,
     processError,
-    upDownLoading,
+    upDownSuccess,
+    upDownError,
     product,
   } = useSelector((state: RootState) => state.product);
   const {
@@ -42,6 +48,17 @@ const AddProcess = ({ productId, productDesc, productLine }: any) => {
   const [showProcessError, setShowProcessError] = useState<string | undefined>(
     undefined
   );
+  const [elementId, setElementId] = useState();
+  const [elementInd, setElementInd] = useState();
+
+  const handleProcessValueChange = (value: any, ind: any) => {
+    if (elementId === "" || elementInd === "") {
+      setShowProcessError("PLEASE ");
+    } else {
+      setElementId(value);
+      setElementInd(ind);
+    }
+  };
 
   /* ============ GET PRODUCT DETAILS ============ */
   const { getLine } = useSelector((state: RootState) => state.product_details);
@@ -67,8 +84,20 @@ const AddProcess = ({ productId, productDesc, productLine }: any) => {
     }
   };
 
-  const handleUpDown = (props: any) => {
-    console.log(props);
+  const handleUpDown = async (props: any) => {
+    try {
+      dispatch(UpDownProcessRequest());
+      const userData = {
+        props: props,
+        product: productId,
+        element: elementId,
+        ind: elementInd,
+      };
+      const { data } = await Axios.put("/updown/process", userData);
+      dispatch(UpDownProcessSuccess(data));
+    } catch (err: any) {
+      dispatch(UpDownProcessFail(err.response.data.message));
+    }
   };
 
   /* ============= PROCESS SELECTION ============= */
@@ -136,40 +165,41 @@ const AddProcess = ({ productId, productDesc, productLine }: any) => {
     }
   };
 
-  // useEffect(() => {
-  //   const handleKeyDown = async (e: KeyboardEvent) => {
-  //     if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-  //       e.preventDefault();
-  //     }
-  //     if ((e.altKey || e.metaKey) && e.key === "s") {
-  //       e.preventDefault();
-  //       phandleSubmit(handleSave)();
-  //     }
-  //   };
+  useEffect(() => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if ((e.altKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        phandleSubmit(handleSave)();
+      }
+    };
 
-  //   window.addEventListener("keydown", handleKeyDown);
-  //   return () => window.removeEventListener("keydown", handleKeyDown);
-  // }, []);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
-  console.log(showProcessError);
-  // useEffect(() => {
-  //   if (processError) {
-  //     // setShowProcessError(processError);
-  //     console.log(showProcessError);
-  //   }
+  useEffect(() => {
+    if (processError) {
+      setShowProcessError(processError);
+    }
 
-  //   dispatch(ClearProcessProductError());
-  // }, [processError]);
+    dispatch(ClearProcessProductError());
+    if (upDownSuccess) {
+      setElementId(undefined);
+      setElementInd(undefined);
+    }
+
+    if (upDownError) {
+      setElementId(undefined);
+      setElementInd(undefined);
+    }
+
+    dispatch(ClearUpDownSuccess());
+    dispatch(ClearUpDownFail());
+  }, [processError, upDownSuccess, upDownError]);
 
   return (
     <div className="modal-box min-w-4xl">
-      <p className="text-center font-bold">ERPAC GROUP LIMITED</p>
-      <p className="text-center font-bold">
-        Plot # 2083-2085, Binodpur, Maijdee, Sadar, Noakhali-3800, <br />
-        Bangladesh
-      </p>
-
-      <div className="flex mt-4">
+      <div className="flex justify-between">
         <form onSubmit={phandleSubmit(handleSave)} className="w-9/12">
           <div className="font-semibold text-sm">Product Information</div>
           <div className="flex items-center flex-wrap border-[1px] border-[#dfdddd] p-2 rounded-md mt-2">
@@ -245,8 +275,8 @@ const AddProcess = ({ productId, productDesc, productLine }: any) => {
                   <option value="" className="hidden"></option>
                   {selectedSpec?.serial?.map((val, ind) => {
                     return (
-                      <option key={ind} value={val.title}>
-                        {val.title}
+                      <option key={ind} value={val?.title}>
+                        {val?.title}
                       </option>
                     );
                   })}
@@ -260,7 +290,7 @@ const AddProcess = ({ productId, productDesc, productLine }: any) => {
                 <input
                   type="text"
                   className="w-11/12 focus:outline-none focus:ring-0 input"
-                  {...processRegister("value")}
+                  {...processRegister("value", { required: true })}
                 />
               </div>
             ) : (
@@ -273,8 +303,8 @@ const AddProcess = ({ productId, productDesc, productLine }: any) => {
                   <option value="" className="hidden"></option>
                   {selectedSerial?.item?.map((val, ind) => {
                     return (
-                      <option key={ind} value={val.title}>
-                        {val.title}
+                      <option key={ind} value={val?.title}>
+                        {val?.title}
                       </option>
                     );
                   })}
@@ -287,32 +317,44 @@ const AddProcess = ({ productId, productDesc, productLine }: any) => {
               <input type="text" className="input w-11/12" />
             </div>
           </div>
-          <button className="bg-black text-white px-8 py-1 mt-5 cursor-pointer rounded-sm">
+          <button className="bg-gray-700 text-white px-8 py-1 mt-5 cursor-pointer rounded-sm">
             {processLoading ? (
               <span className="loading loading-spinner loading-xs"></span>
             ) : (
               <p>Save (Alt + S)</p>
             )}
           </button>
+          <button className=" bg-gray-700 text-white px-8 py-1 mt-5 cursor-pointer rounded-sm ml-2">
+            Delete
+          </button>
         </form>
         <div className="pl-2 w-3/12">
           <p className="text-sm font-bold">Process Sequence</p>
           <div className="border border-black w-full min-h-80 mt-2 rounded-md px-4 py-3">
             {showProcessError && <p>{showProcessError}</p>}
-            {product?.process.map((val: any, ind) => {
+            {product?.process?.map((val: any, ind) => {
               return (
                 <div className="flex items-center" key={ind}>
-                  <p>
-                    <input type="checkbox" className="mr-2" />
-                  </p>
-                  {/* <h4 className="text-md mr-1">{ind + 1})</h4> */}
-                  <h4 className="text-md">{val.name}</h4>
+                  {product?.process?.length > 0 && (
+                    <input
+                      type="radio"
+                      className="mr-2"
+                      name="manufacturing-process"
+                      value={val?._id}
+                      checked={elementId === val?._id}
+                      onChange={() => handleProcessValueChange(val?._id, ind)}
+                    />
+                  )}
+                  <h4 className="text-md">{val?.name}</h4>
                 </div>
               );
             })}
           </div>
           <div className="flex justify-between">
-            <button className="border border-black rounded-sm px-3 py-1 mt-2 cursor-pointer text-xs ">
+            <button
+              onClick={() => handleUpDown("DELETE")}
+              className="border border-black rounded-sm px-3 py-1 mt-2 cursor-pointer text-xs "
+            >
               Delete
             </button>
             <button
@@ -329,6 +371,56 @@ const AddProcess = ({ productId, productDesc, productLine }: any) => {
             </button>
           </div>
         </div>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="table table-zebra border-[1px] w-full border-gray-300 mt-1">
+          <thead className="block w-full">
+            <tr>
+              <th>Process</th>
+              <th>Specification</th>
+              <th>Serial</th>
+              <th>Process Value</th>
+            </tr>
+          </thead>
+          <tbody className="block w-full h-20 overflow-y-auto">
+            <tr>
+              <td>Cy Ganderton</td>
+              <td>Quality Control Specialist</td>
+              <td>Blue</td>
+              <td>Blue</td>
+            </tr>
+            <tr>
+              <td>Cy Ganderton</td>
+              <td>Quality Control Specialist</td>
+              <td>Blue</td>
+              <td>Blue</td>
+            </tr>
+            <tr>
+              <td>Cy Ganderton</td>
+              <td>Quality Control Specialist</td>
+              <td>Blue</td>
+              <td>Blue</td>
+            </tr>
+            <tr>
+              <td>Cy Ganderton</td>
+              <td>Quality Control Specialist</td>
+              <td>Blue</td>
+              <td>Blue</td>
+            </tr>
+            <tr>
+              <td>Cy Ganderton</td>
+              <td>Quality Control Specialist</td>
+              <td>Blue</td>
+              <td>Blue</td>
+            </tr>
+            <tr>
+              <td>Cy Ganderton</td>
+              <td>Quality Control Specialist</td>
+              <td>Blue</td>
+              <td>Blue</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   );

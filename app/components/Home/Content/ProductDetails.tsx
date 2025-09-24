@@ -114,7 +114,7 @@ const ProductDetails = ({ props, setTab, tab }: any) => {
   );
   const handleBuyerChange = (e: any) => {
     const buyerTitle = e.target.value;
-    const buyer = organization.find((b) => b.title === buyerTitle);
+    const buyer = organization.find((b: any) => b.title === buyerTitle);
     if (buyer) {
       setSelectedBuyer(buyer);
       setSelectedVendor(undefined);
@@ -141,7 +141,7 @@ const ProductDetails = ({ props, setTab, tab }: any) => {
   );
   const handleShowBuyerChange = (e: any) => {
     const buyerTitle = e.target.value;
-    const buyer = organization.find((b) => b.title === buyerTitle);
+    const buyer = organization.find((b: any) => b.title === buyerTitle);
     if (buyer) {
       setShowSelectedBuyer(buyer);
       setShowSelectedVendor(undefined);
@@ -153,7 +153,7 @@ const ProductDetails = ({ props, setTab, tab }: any) => {
     const lineName = e.target.value;
     const line = getLine.find((b) => b.name === lineName);
     if (line) {
-      setSelectedLine(line);
+      setSelectedLine(line as any);
     }
   };
 
