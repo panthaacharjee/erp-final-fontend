@@ -32,8 +32,14 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         // Forward credentials to Express for validation
-        const { data } = await Axios.post("/login/user", credentials);
-        console.log(data);
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Request timeout")), 8000)
+        );
+
+        const axiosPromise = Axios.post("/login/user", credentials);
+
+        const { data } = await Promise.race([axiosPromise, timeoutPromise]);
+
         let user = data.user;
         user.sessionToken = data.user?.authentication.sessionToken;
         return user || null;
@@ -42,13 +48,22 @@ const handler = NextAuth({
   ],
   callbacks: {
     async signIn({ user, profile, account }) {
+      if (account.provider === "credentials") {
+        return true; // Already handled in authorize
+      }
+
       try {
-        const { data } = await Axios.post(`/login/auth`, {
-          email: profile.email,
-          name: profile.name,
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("OAuth timeout")), 5000)
+        );
+
+        const axiosPromise = Axios.post(`/login/auth`, {
+          email: profile?.email || user.email,
+          name: profile?.name || user.name,
           accountType: account.provider,
         });
 
+        const { data } = await Promise.race([axiosPromise, timeoutPromise]);
         user.sessionToken = data.user?.authentication.sessionToken;
       } catch (err) {
         console.log(err);

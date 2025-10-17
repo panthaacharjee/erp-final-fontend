@@ -287,23 +287,23 @@ const ProductCreateMenu = ({
   };
 
   const handleDownload = async () => {
-    // try {
-    //   const response = await Axios.get(`/employee/details/${id}`, {
-    //     responseType: "blob", // Important for binary data
-    //   });
-    //   // Create a blob URL for the PDF
-    //   const url = window.URL.createObjectURL(new Blob([response.data]));
-    //   const link = document.createElement("a");
-    //   link.href = url;
-    //   link.setAttribute("download", `${user?.employeeId}-details.pdf`);
-    //   document.body.appendChild(link);
-    //   link.click();
-    //   // Clean up
-    //   window.URL.revokeObjectURL(url);
-    //   document.body.removeChild(link);
-    // } catch (err) {
-    //   console.error("Error downloading PDF:", err);
-    // }
+    try {
+      const response = await Axios.get(`/product/details/${id}`, {
+        responseType: "blob", // Important for binary data
+      });
+      // Create a blob URL for the PDF
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `prdocut-details.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Error downloading PDF:", err);
+    }
   };
 
   useEffect(() => {}, []);
