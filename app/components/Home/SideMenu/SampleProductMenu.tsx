@@ -33,9 +33,6 @@ const ProductCreateMenu = ({
   setTab,
   props,
   setFocus,
-  setProductStatus,
-  setProductImage,
-  id,
 }: any) => {
   const dispatch = useDispatch();
   const { items, content } = useSelector((state: RootState) => state.tab);
@@ -83,14 +80,12 @@ const ProductCreateMenu = ({
     setValue("full_part", NaN);
     setValue("half_part", NaN);
     setValue("comments", "");
-    setProductImage(undefined);
 
     setShowSelectedBuyer(undefined);
     setShowSelectedContact(undefined);
     setShowSelectedVendor(undefined);
     setSelectedLine(undefined);
     setSelectedCategory(undefined);
-    setProductStatus("Entry Mode");
 
     // dispatch(ClearProductRefresh());
   };
@@ -225,65 +220,58 @@ const ProductCreateMenu = ({
   };
 
   const handlePrint = async () => {
-    if (getValues("p_id") === "New") {
-      return toast("PRODUCT NOT FOUND");
-    } else {
-      try {
-        const response = await Axios.get(`/product/details/${id}`, {
-          responseType: "blob",
-        });
-
-        const blob = new Blob([response.data], { type: "application/pdf" });
-        const url = window.URL.createObjectURL(blob);
-
-        // Open in new window with proper null checks
-        const printWindow = window.open(url);
-
-        if (printWindow) {
-          // Add event listener for when the window loads
-          printWindow.addEventListener(
-            "load",
-            () => {
-              // Additional safety check
-              if (!printWindow.closed) {
-                printWindow.print();
-              }
-            },
-            { once: true }
-          );
-
-          // Fallback in case the load event doesn't fire
-          setTimeout(() => {
-            if (printWindow && !printWindow.closed) {
-              printWindow.print();
-            }
-          }, 1000);
-        } else {
-          // Popup was blocked - use iframe fallback
-          const iframe = document.createElement("iframe");
-          iframe.style.display = "none";
-          iframe.src = url;
-          document.body.appendChild(iframe);
-
-          iframe.onload = () => {
-            setTimeout(() => {
-              iframe.contentWindow?.print();
-              // Clean up
-              window.URL.revokeObjectURL(url);
-              document.body.removeChild(iframe);
-            }, 1000);
-          };
-        }
-
-        // Cleanup URL object after printing
-        setTimeout(() => {
-          window.URL.revokeObjectURL(url);
-        }, 10000);
-      } catch (err) {
-        console.error("Error handling PDF:", err);
-        // Add user feedback here
-      }
-    }
+    // if (getValues("employeeId") === "new") {
+    //   toast("EMPLOYEE NOT FOUND");
+    // }
+    // try {
+    //   const response = await Axios.get(`/employee/details/${id}`, {
+    //     responseType: "blob",
+    //   });
+    //   const blob = new Blob([response.data], { type: "application/pdf" });
+    //   const url = window.URL.createObjectURL(blob);
+    //   // Open in new window with proper null checks
+    //   const printWindow = window.open(url);
+    //   if (printWindow) {
+    //     // Add event listener for when the window loads
+    //     printWindow.addEventListener(
+    //       "load",
+    //       () => {
+    //         // Additional safety check
+    //         if (!printWindow.closed) {
+    //           printWindow.print();
+    //         }
+    //       },
+    //       { once: true }
+    //     );
+    //     // Fallback in case the load event doesn't fire
+    //     setTimeout(() => {
+    //       if (printWindow && !printWindow.closed) {
+    //         printWindow.print();
+    //       }
+    //     }, 1000);
+    //   } else {
+    //     // Popup was blocked - use iframe fallback
+    //     const iframe = document.createElement("iframe");
+    //     iframe.style.display = "none";
+    //     iframe.src = url;
+    //     document.body.appendChild(iframe);
+    //     iframe.onload = () => {
+    //       setTimeout(() => {
+    //         iframe.contentWindow?.print();
+    //         // Clean up
+    //         window.URL.revokeObjectURL(url);
+    //         document.body.removeChild(iframe);
+    //       }, 1000);
+    //     };
+    //   }
+    //   // Cleanup URL object after printing
+    //   setTimeout(() => {
+    //     window.URL.revokeObjectURL(url);
+    //   }, 10000);
+    // } catch (err) {
+    //   console.error("Error handling PDF:", err);
+    //   // Add user feedback here
+    // }
   };
 
   const handleDownload = async () => {

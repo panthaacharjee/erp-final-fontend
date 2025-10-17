@@ -7,7 +7,10 @@ import {
   processReducer,
   productDetailReducer,
 } from "./reducers/businessReducer";
-import { productReducer } from "./reducers/productReducer";
+import {
+  productReducer,
+  sampleProductReducer,
+} from "./reducers/productReducer";
 // Import other reducers
 
 const rootReducer = combineReducers({
@@ -19,6 +22,7 @@ const rootReducer = combineReducers({
   product_details: productDetailReducer,
   process: processReducer,
   product: productReducer,
+  sampleProduct: sampleProductReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

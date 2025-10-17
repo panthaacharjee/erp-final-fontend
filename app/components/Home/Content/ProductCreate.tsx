@@ -29,10 +29,15 @@ import {
   ProductFail,
   ProductRequest,
   ProductSuccess,
+  ProductValidationFail,
+  ProductValidationRequest,
+  ProductValidationSuccess,
 } from "@/app/redux/reducers/productReducer";
 import Processing from "../../Processing";
 import { Princess_Sofia } from "next/font/google";
 import ProductCreateMenu from "../SideMenu/ProductCreateMenu";
+import { callbackify } from "util";
+import AddImage from "../../utils/AddImage";
 
 const ProductCreate = ({ props, setTab, tab }: any) => {
   const dispatch = useDispatch();
@@ -42,11 +47,14 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
     productError,
     processSuccess,
     product,
+    productValidationLoading,
   } = useSelector((state: RootState) => state.product);
+  const { user } = useSelector((state: RootState) => state.user);
 
   const [idDisable, setIdDisable] = useState(false);
 
   const [productProcess, setProductProcess] = useState(false);
+  const [productImage, setProductImage] = useState<string | undefined>();
 
   /* =========== ADD PROCESS SHOW ============= */
   const [showProcessActive, setShowProcessActive] = useState(true);
@@ -78,7 +86,56 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
       return toast.error("NEED PRODUCT DESCRIPTION");
     }
 
+    if (productStatus == "Validated") {
+      return null;
+    }
     const modal = document.getElementById("my_modal_2");
+    if (modal) {
+      (modal as HTMLDialogElement).showModal();
+      setShowProcessActive(false);
+
+      const handleModalClose = () => {
+        setShowProcessActive(true);
+        modal.removeEventListener("close", handleModalClose);
+      };
+
+      modal.addEventListener("close", handleModalClose);
+    } else {
+      console.error("Modal element not found!");
+    }
+  };
+
+  const handleShowAddImage = (e: any) => {
+    e.preventDefault();
+
+    const validateWithRegex = (pid: string) => {
+      const pattern = /^PID\/\d{4}\/\d{5}$/;
+      return pattern.test(pid);
+    };
+
+    const p_id = getValues("p_id");
+    const productLine = watch("line");
+    const productDesc = watch("desc");
+
+    if (validateWithRegex(p_id) === false) {
+      return toast.error("NEED VALID PID");
+    }
+    if (idDisable === false) {
+      return toast.error("PLEASE ENTER A VALID PID NUMBER THEN PRESS ENTER");
+    }
+
+    if (productLine === undefined || productLine === "") {
+      return toast.error("NEED A PRODUCT LINE");
+    }
+
+    if (productDesc === "") {
+      return toast.error("NEED PRODUCT DESCRIPTION");
+    }
+
+    if (productStatus == "Validated") {
+      return null;
+    }
+    const modal = document.getElementById("my_modal_3");
     if (modal) {
       (modal as HTMLDialogElement).showModal();
       setShowProcessActive(false);
@@ -142,7 +199,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
           weight_per_pcs: dataInput.weight_per_pcs,
           weight_unit: dataInput.weight_unit,
           order_unit: dataInput.order_unit,
-          moq: parseInt(dataInput.moq as unknown as string) || 0,
+          moq: parseFloat(dataInput.moq as unknown as string) || 0,
           moq_unit: dataInput.moq_unit,
           last_price: dataInput.last_price,
           currency: dataInput.currency,
@@ -200,6 +257,31 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
       } catch (err: any) {
         dispatch(ProductFail(err.response.data.message));
       }
+    }
+  };
+
+  const [productStatus, setProductStatus] = useState<string>("Entry Mode");
+  const productValidation = async (e: any) => {
+    e.preventDefault();
+    const validateWithRegex = (pid: string) => {
+      const pattern = /^PID\/\d{4}\/\d{5}$/;
+      return pattern.test(pid);
+    };
+    if (validateWithRegex(getValues("p_id")) === false) {
+      return;
+    }
+    try {
+      dispatch(ProductValidationRequest());
+      const userData = {
+        id: product?.p_id,
+        mode: product?.status.mode,
+        user: user,
+      };
+      const { data } = await Axios.put("/product/validation", userData);
+
+      dispatch(ProductValidationSuccess(data));
+    } catch (err: any) {
+      dispatch(ProductValidationFail(err.response.data.message));
     }
   };
 
@@ -318,6 +400,9 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
   useEffect(() => {
     if (showProcessActive === true) {
       const handleKeyDown = async (e: KeyboardEvent) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+        }
         if ((e.ctrlKey || e.metaKey) && e.key === "s") {
           e.preventDefault();
 
@@ -350,6 +435,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
       setIdDisable(true);
       setProductProcess(product?.process.length > 0 ? true : false);
       setValue("p_id", product?.p_id ? product.p_id : "New");
+      setProductImage(product?.image?.url);
 
       setValue(
         "recieve",
@@ -407,6 +493,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
       setValue("full_part", product?.price.full_part || NaN);
       setValue("half_part", product?.price.half_part || NaN);
       setValue("comments", product?.sample_submission.buyer_comment || "");
+      setProductStatus(product?.status.mode);
     }
   }, [product]);
 
@@ -418,7 +505,6 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
       getProductLine();
     }
   }, []);
-  console.log(organization, getLine);
 
   return (
     <div className="flex  relative bg-white">
@@ -445,13 +531,25 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
               className="input"
               defaultValue={new Date(Date.now()).toISOString().split("T")[0]}
               {...productRegister("recieve")}
+              disabled={productStatus === "Validated" ? true : false}
             />
           </div>
           <div>
             <label className="text-xs font-bold">Status</label>
             <br />
-            <button className="border border-black rounded-sm px-4 py-1 text-sm bg-red-300 cursor-pointer">
-              Entry Mode
+            <button
+              onClick={(e) => productValidation(e)}
+              className={`border border-black rounded-sm px-4 py-1 text-sm  cursor-pointer ${
+                productStatus === "Validated" ? "bg-green-400" : "  bg-red-300"
+              }`}
+            >
+              {productValidationLoading ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : productStatus ? (
+                productStatus
+              ) : (
+                "Entry Mode"
+              )}
             </button>
           </div>
         </div>
@@ -470,6 +568,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       {...productRegister("buyer")}
                       onChange={handleShowBuyerChange}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     >
                       {organization ? (
                         <option value="" className="hidden"></option>
@@ -502,6 +601,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       }
                       onChange={handleShowVendorChange}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     >
                       {showSelectedBuyer ? (
                         <option value="" className="hidden"></option>
@@ -535,6 +635,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       value={showSelectedContact?.name || ""}
                       onChange={handleShowContactChange}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     >
                       {showSelectedVendor ? (
                         <option value="" className="hidden"></option>
@@ -562,6 +663,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                     <select
                       {...productRegister("sales")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     >
                       <option value="" className="hidden"></option>
                       <option>Pantha Acharjee</option>
@@ -586,6 +688,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       {...productRegister("line")}
                       onChange={handleLineChange}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     >
                       <option value="" className="hidden"></option>
                       {getLine?.map((val, ind) => {
@@ -608,6 +711,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       }
                       onChange={handleCategoryChange}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     >
                       {selectedLine ? (
                         <option value="" className="hidden"></option>
@@ -641,6 +745,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       type="text"
                       className="input w-11/12"
                       {...productRegister("desc")}
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -649,6 +754,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       type="text"
                       className="input w-11/12"
                       {...productRegister("code")}
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -657,6 +763,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       type="text"
                       className="input w-11/12"
                       {...productRegister("ref")}
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -665,6 +772,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       type="text"
                       className="input w-11/12"
                       {...productRegister("hs_code")}
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     />
                   </div>
                 </div>
@@ -681,6 +789,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       type="number"
                       className="input w-11/12"
                       {...productRegister("width")}
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -689,6 +798,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       type="number"
                       className="input w-11/12"
                       {...productRegister("height")}
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -697,6 +807,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       type="number"
                       className="input w-11/12"
                       {...productRegister("length")}
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -704,6 +815,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                     <select
                       {...productRegister("dimension_unit")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     >
                       <option value="" className="hidden"></option>
                       <option>mm</option>
@@ -724,6 +836,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                     <select
                       {...productRegister("page_part")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     >
                       <option value="" className="hidden"></option>
                       <option>Page</option>
@@ -737,6 +850,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       className="w-11/12 focus:outline-none focus:ring-0  select"
                       {...productRegister("set")}
                       defaultValue={"false"}
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     >
                       <option value={"true"}>Yes</option>
                       <option value={"false"}>No</option>
@@ -747,6 +861,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                     <select
                       {...productRegister("weight_per_pcs")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     >
                       <option value="" className="hidden"></option>
                       <option>1000</option>
@@ -761,6 +876,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       type="number"
                       className="input w-11/12"
                       {...productRegister("weight")}
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -768,6 +884,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                     <select
                       {...productRegister("weight_unit")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     >
                       <option value="" className="hidden"></option>
                       <option>gm</option>
@@ -791,6 +908,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                     <select
                       {...productRegister("order_unit")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     >
                       <option value="" className="hidden"></option>
                       <option>Quantity</option>
@@ -811,6 +929,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       type="number"
                       className="input w-11/12"
                       {...productRegister("moq")}
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -818,6 +937,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                     <select
                       {...productRegister("moq_unit")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     >
                       <option value="" className="hidden"></option>
                       <option>Pcs</option>
@@ -844,6 +964,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                         new Date(Date.now()).toISOString().split("T")[0]
                       }
                       {...productRegister("last_price")}
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -851,6 +972,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                     <select
                       {...productRegister("currency")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     >
                       <option value="" className="hidden"></option>
                       <option>USD</option>
@@ -863,6 +985,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       {...productRegister("price_unit")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
                       defaultValue={"Pcs"}
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     >
                       <option value={"Pcs"}>Pcs</option>
                       <option value={"Pair"}>Pair</option>
@@ -876,6 +999,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       type="number"
                       className="input w-11/12"
                       {...productRegister("full_part")}
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     />
                   </div>
                   {watch("price_unit") === "Set" && (
@@ -887,6 +1011,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                         type="number"
                         className="input w-11/12"
                         {...productRegister("half_part")}
+                        disabled={productStatus === "Entry Mode" ? false : true}
                       />
                     </div>
                   )}
@@ -909,6 +1034,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                         new Date(Date.now()).toISOString().split("T")[0]
                       }
                       {...productRegister("sample_date")}
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -917,6 +1043,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       type="text"
                       className="input w-11/12"
                       {...productRegister("comments")}
+                      disabled={productStatus === "Entry Mode" ? false : true}
                     />
                   </div>
                 </div>
@@ -981,10 +1108,17 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                 })}
             </div>
 
-            <button className="mt-5 w-full border border-black rounded-sm px-4 py-2 text-sm font-bold bg-blue-100 cursor-pointer">
+            <button
+              onClick={handleShowAddImage}
+              className="mt-5 w-full border border-black rounded-sm px-4 py-2 text-sm font-bold bg-blue-100 cursor-pointer"
+            >
               Add Sample
             </button>
-            <div className="border border-black w-full h-96 mt-3 rounded-md px-4 py-3 overflow-y-auto scroll-auto"></div>
+            <div className="border border-black w-full h-96 mt-3 rounded-md px-4 py-3 overflow-y-auto scroll-auto flex justify-center items-center">
+              <div className="">
+                {product?.image?.url && <img src={productImage} />}
+              </div>
+            </div>
           </div>
         </div>
       </form>
@@ -1004,6 +1138,9 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
           setShowSelectedContact={setShowSelectedContact}
           setSelectedLine={setSelectedLine}
           setSelectedCategory={setSelectedCategory}
+          setProductStatus={setProductStatus}
+          setProductImage={setProductImage}
+          id={product?._id}
         />
       </div>
       <dialog id="my_modal_2" className="modal w-full">
@@ -1012,6 +1149,12 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
           productDesc={getValues("desc")}
           productLine={getValues("line")}
         />
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
+      <dialog id="my_modal_3" className="modal w-full">
+        <AddImage p_id={getValues("p_id")} />
         <form method="dialog" className="modal-backdrop">
           <button>close</button>
         </form>

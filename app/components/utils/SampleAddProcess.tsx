@@ -8,31 +8,43 @@ import {
   specification,
 } from "@/app/redux/interfaces/businessInterface";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { IProcess } from "@/app/redux/interfaces/productInterface";
+import {
+  IProcess,
+  ISampleProcess,
+} from "@/app/redux/interfaces/productInterface";
 import {
   ClearProcessProductError,
   ClearProcessProductSuccess,
+  ClearSampleUpDownFail,
+  ClearSampleUpDownSuccess,
   ClearUpDownFail,
   ClearUpDownSuccess,
   CreateProductProcessFail,
   CreateProductProcessRequest,
   CreateProductProcessSucess,
+  CreateSampleProductProcessFail,
+  CreateSampleProductProcessRequest,
+  CreateSampleProductProcessSucess,
   UpDownProcessFail,
   UpDownProcessRequest,
   UpDownProcessSuccess,
+  UpDownSampleProcessFail,
+  UpDownSampleProcessRequest,
+  UpDownSampleProcessSuccess,
 } from "@/app/redux/reducers/productReducer";
+import { toast } from "react-toastify";
 
-const AddProcess = ({ productId, productDesc, productLine }: any) => {
+const SampleAddProcess = ({ productId, productDesc, productLine }: any) => {
   const dispatch = useDispatch();
 
   const {
-    processLoading,
-    processSuccess,
-    processError,
-    upDownSuccess,
-    upDownError,
-    product,
-  } = useSelector((state: RootState) => state.product);
+    sampleProcessLoading,
+    sampleProcessSuccess,
+    sampleProcessError,
+    sampleUpDownSuccess,
+    sampleUpDownError,
+    sampleProduct,
+  } = useSelector((state: RootState) => state.sampleProduct);
   const {
     register: processRegister,
     handleSubmit: phandleSubmit,
@@ -40,7 +52,7 @@ const AddProcess = ({ productId, productDesc, productLine }: any) => {
     getValues,
     setFocus,
     watch,
-  } = useForm<IProcess>({
+  } = useForm<ISampleProcess>({
     defaultValues: {},
   });
 
@@ -65,9 +77,9 @@ const AddProcess = ({ productId, productDesc, productLine }: any) => {
   const Line = getLine.find((val) => val.name === productLine);
 
   /* =================== SUBMIT SECTION ===================== */
-  const handleSave: SubmitHandler<IProcess> = async (dataInput: any) => {
+  const handleSave: SubmitHandler<ISampleProcess> = async (dataInput: any) => {
     try {
-      dispatch(CreateProductProcessRequest());
+      dispatch(CreateSampleProductProcessRequest());
       const processData = {
         process: dataInput.process,
         spec: dataInput.spec,
@@ -76,26 +88,29 @@ const AddProcess = ({ productId, productDesc, productLine }: any) => {
         product: productId,
         category: productDesc,
       };
-      const { data } = await Axios.put("/create/product/process", processData);
-      dispatch(CreateProductProcessSucess(data));
+      const { data } = await Axios.put(
+        "/create/sample/product/process",
+        processData
+      );
+      dispatch(CreateSampleProductProcessSucess(data));
     } catch (err: any) {
-      dispatch(CreateProductProcessFail(err.response.data.message));
+      dispatch(CreateSampleProductProcessFail(err.response.data.message));
     }
   };
 
   const handleUpDown = async (props: any) => {
     try {
-      dispatch(UpDownProcessRequest());
+      dispatch(UpDownSampleProcessRequest());
       const userData = {
         props: props,
         product: productId,
         element: elementId,
         ind: elementInd,
       };
-      const { data } = await Axios.put("/updown/process", userData);
-      dispatch(UpDownProcessSuccess(data));
+      const { data } = await Axios.put("/updown/sample/process", userData);
+      dispatch(UpDownSampleProcessSuccess(data));
     } catch (err: any) {
-      dispatch(UpDownProcessFail(err.response.data.message));
+      dispatch(UpDownSampleProcessFail(err.response.data.message));
     }
   };
 
@@ -165,27 +180,44 @@ const AddProcess = ({ productId, productDesc, productLine }: any) => {
   };
 
   useEffect(() => {
-    if (processError) {
-      setShowProcessError(processError);
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if ((e.altKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        phandleSubmit(handleSave)();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    if (sampleProcessError) {
+      setShowProcessError(sampleProcessError);
     }
 
     dispatch(ClearProcessProductError());
-    if (upDownSuccess) {
+    if (sampleUpDownSuccess) {
       setElementId(undefined);
       setElementInd(undefined);
     }
 
-    if (upDownError) {
+    if (sampleUpDownError) {
       setElementId(undefined);
       setElementInd(undefined);
     }
 
-    dispatch(ClearUpDownSuccess());
-    dispatch(ClearUpDownFail());
-  }, [processError, upDownSuccess, upDownError]);
+    dispatch(ClearSampleUpDownSuccess());
+    dispatch(ClearSampleUpDownFail());
+  }, [sampleProcessError, sampleUpDownSuccess, sampleUpDownError]);
 
   return (
     <div className="modal-box min-w-4xl">
+      <p className="text-center font-bold">ERPAC GROUP LIMITED</p>
+      <p className="text-center font-bold">
+        Plot # 2083-2085, Binodpur, Maijdee, Sadar, Noakhali-3800, <br />
+        Bangladesh
+      </p>
       <div className="flex justify-between">
         <form onSubmit={phandleSubmit(handleSave)} className="w-9/12">
           <div className="font-semibold text-sm">Product Information</div>
@@ -305,10 +337,10 @@ const AddProcess = ({ productId, productDesc, productLine }: any) => {
             </div>
           </div>
           <button className="bg-gray-700 text-white px-8 py-1 mt-5 cursor-pointer rounded-sm">
-            {processLoading ? (
+            {sampleProcessLoading ? (
               <span className="loading loading-spinner loading-xs"></span>
             ) : (
-              <p>Save</p>
+              <p>Save (Alt + S)</p>
             )}
           </button>
           <button className=" bg-gray-700 text-white px-8 py-1 mt-5 cursor-pointer rounded-sm ml-2">
@@ -319,10 +351,10 @@ const AddProcess = ({ productId, productDesc, productLine }: any) => {
           <p className="text-sm font-bold">Process Sequence</p>
           <div className="border border-black w-full min-h-80 mt-2 rounded-md px-4 py-3">
             {showProcessError && <p>{showProcessError}</p>}
-            {product?.process?.map((val: any, ind) => {
+            {sampleProduct?.process?.map((val: any, ind) => {
               return (
                 <div className="flex items-center" key={ind}>
-                  {product?.process?.length > 0 && (
+                  {sampleProduct?.process?.length > 0 && (
                     <input
                       type="radio"
                       className="mr-2"
@@ -413,4 +445,4 @@ const AddProcess = ({ productId, productDesc, productLine }: any) => {
   );
 };
 
-export default AddProcess;
+export default SampleAddProcess;
