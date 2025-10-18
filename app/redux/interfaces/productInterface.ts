@@ -211,6 +211,7 @@ export interface ISampleProcessGet {
   ];
 }
 export interface ISampleGetProduct {
+  _id: string;
   p_id: string;
   recieve: string;
   status: {

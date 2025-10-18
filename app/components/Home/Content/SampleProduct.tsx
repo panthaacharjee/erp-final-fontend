@@ -30,8 +30,8 @@ import {
   SampleProductSuccess,
 } from "@/app/redux/reducers/productReducer";
 import Processing from "../../Processing";
-import ProductCreateMenu from "../SideMenu/ProductCreateMenu";
 import SampleAddProcess from "../../utils/SampleAddProcess";
+import SampleProductMenu from "../SideMenu/SampleProductMenu";
 
 const SampleProduct = ({ props, setTab, tab }: any) => {
   const dispatch = useDispatch();
@@ -66,7 +66,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
       return toast.error("NEED VALID PID");
     }
     if (idDisable === false) {
-      return toast.error("PLEASE ENTER A VALID PID NUMBER THEN PRESS ENTER");
+      return toast.error("PLEASE ENTER A VALID PID NUMBER");
     }
 
     if (productLine === undefined || productLine === "") {
@@ -997,7 +997,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
         </div>
       </form>
       <div className="w-[7%] bg-[#d3e6ec]  min-h-screen pt-14 px-2">
-        {/* <ProductCreateMenu
+        <SampleProductMenu
           getValues={getValues}
           setValue={setValue}
           setFocus={setFocus}
@@ -1012,7 +1012,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
           setShowSelectedContact={setShowSelectedContact}
           setSelectedLine={setSelectedLine}
           setSelectedCategory={setSelectedCategory}
-        /> */}
+        />
       </div>
       <dialog id="my_modal_2" className="modal w-full">
         <SampleAddProcess

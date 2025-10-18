@@ -19,7 +19,7 @@ import {
   ProductSuccess,
 } from "@/app/redux/reducers/productReducer";
 
-const ProductCreateMenu = ({
+const SampleProductMenu = ({
   setValue,
   setIdDisable,
   setProductProcess,
@@ -137,7 +137,7 @@ const ProductCreateMenu = ({
           comments: getValues("comments"),
         };
         const { data } = await Axios.post(
-          `/create/product`,
+          `/create/sample/product`,
 
           userData,
           config
@@ -356,7 +356,7 @@ const ProductCreateMenu = ({
   );
 };
 
-export default ProductCreateMenu;
+export default SampleProductMenu;
 
 // import React from "react";
 

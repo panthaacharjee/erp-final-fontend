@@ -92,7 +92,7 @@ const ProductCreateMenu = ({
     setSelectedCategory(undefined);
     setProductStatus("Entry Mode");
 
-    // dispatch(ClearProductRefresh());
+    dispatch(ClearProductRefresh());
   };
 
   const handleSaveButton = async () => {
@@ -206,7 +206,7 @@ const ProductCreateMenu = ({
     setSelectedLine(undefined);
     setSelectedCategory(undefined);
 
-    // dispatch(ClearProductRefresh());
+    dispatch(ClearProductRefresh());
     dispatch(RemoveTabRequest());
     const data = {
       loading: false,
