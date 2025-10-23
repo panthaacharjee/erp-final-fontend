@@ -45,7 +45,6 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
     productLoading,
     productSuccess,
     productError,
-    processSuccess,
     product,
     productValidationLoading,
   } = useSelector((state: RootState) => state.product);
@@ -436,6 +435,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
       setProductProcess(product?.process.length > 0 ? true : false);
       setValue("p_id", product?.p_id ? product.p_id : "New");
       setProductImage(product?.image?.url);
+      setProductStatus(product?.status.mode);
 
       setValue(
         "recieve",
@@ -493,7 +493,6 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
       setValue("full_part", product?.price.full_part || NaN);
       setValue("half_part", product?.price.half_part || NaN);
       setValue("comments", product?.sample_submission.buyer_comment || "");
-      setProductStatus(product?.status.mode);
     }
   }, [product]);
 

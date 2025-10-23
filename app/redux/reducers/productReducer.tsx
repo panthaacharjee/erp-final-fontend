@@ -176,6 +176,14 @@ const smapleInitialState: sampleProductState = {
   sampleUpDownSuccess: null,
   sampleUpDownError: null,
 
+  sampleProductValidationLoading: false,
+  sampleProductValidationSuccess: null,
+  sampleProductValidationError: null,
+
+  sampleProductImageLoading: false,
+  sampleProductImageSuccess: null,
+  sampleProductImageError: null,
+
   sampleProduct: null,
 };
 
@@ -216,7 +224,7 @@ const sampleSlice = createSlice({
     },
     CreateSampleProductProcessSucess(
       state,
-      action: PayloadAction<IProductState>
+      action: PayloadAction<ISampleProductState>
     ) {
       state.sampleProcessLoading = false;
       state.sampleProcessSuccess = action.payload.message;
@@ -236,7 +244,10 @@ const sampleSlice = createSlice({
     UpDownSampleProcessRequest(state) {
       state.sampleUpDownLoading = true;
     },
-    UpDownSampleProcessSuccess(state, action: PayloadAction<IProductState>) {
+    UpDownSampleProcessSuccess(
+      state,
+      action: PayloadAction<ISampleProductState>
+    ) {
       state.sampleUpDownLoading = false;
       state.sampleUpDownSuccess = action.payload.message;
       state.sampleProduct = action.payload.product;
@@ -251,6 +262,38 @@ const sampleSlice = createSlice({
     },
     ClearSampleUpDownFail(state) {
       state.sampleUpDownError = null;
+    },
+
+    SampleProductValidationRequest(state) {
+      state.sampleProductValidationLoading = true;
+    },
+    SampleProductValidationSuccess(
+      state,
+      action: PayloadAction<ISampleProductState>
+    ) {
+      state.sampleProductValidationLoading = false;
+      state.sampleProductValidationSuccess = action.payload.message;
+      state.sampleProduct = action.payload.product;
+    },
+    SampleProductValidationFail(state, action: PayloadAction<string>) {
+      state.sampleProductValidationLoading = false;
+      state.sampleProductValidationError = action.payload;
+    },
+
+    SampleProductImageRequest(state) {
+      state.sampleProductImageLoading = true;
+    },
+    SampleProductImageSuccess(
+      state,
+      action: PayloadAction<ISampleProductState>
+    ) {
+      state.sampleProductImageLoading = false;
+      state.sampleProduct = action.payload.product;
+      state.sampleProductImageSuccess = action.payload.message;
+    },
+    SampleProductImageFail(state, action: PayloadAction<string>) {
+      state.sampleProductImageLoading = false;
+      state.sampleProductImageError = action.payload;
     },
   },
 });
@@ -277,6 +320,14 @@ export const {
   UpDownSampleProcessFail,
   ClearSampleUpDownSuccess,
   ClearSampleUpDownFail,
+
+  SampleProductValidationRequest,
+  SampleProductValidationSuccess,
+  SampleProductValidationFail,
+
+  SampleProductImageRequest,
+  SampleProductImageSuccess,
+  SampleProductImageFail,
 } = sampleSlice.actions;
 
 export const sampleProductReducer = sampleSlice.reducer;

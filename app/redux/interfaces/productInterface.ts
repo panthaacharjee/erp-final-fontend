@@ -219,6 +219,11 @@ export interface ISampleGetProduct {
     user: User[];
   };
 
+  image: {
+    public_id: string;
+    url: string;
+  };
+
   contactDetails: {
     buyer: string;
     vendor: string;
@@ -281,6 +286,14 @@ export interface sampleProductState {
   sampleUpDownLoading: boolean;
   sampleUpDownSuccess: string | null;
   sampleUpDownError: string | null;
+
+  sampleProductValidationLoading: boolean;
+  sampleProductValidationSuccess: string | null;
+  sampleProductValidationError: string | null;
+
+  sampleProductImageLoading: boolean;
+  sampleProductImageSuccess: string | null;
+  sampleProductImageError: string | null;
 
   sampleProduct: ISampleGetProduct | null;
 }

@@ -1,9 +1,7 @@
-import React from 'react'
+import React from "react";
 
-const ProductApproval = () => {
-  return (
-    <div>ProductApproval</div>
-  )
-}
+const ProductApproval = ({ props, tab, setTab }: any) => {
+  return <div>ProductApproval</div>;
+};
 
-export default ProductApproval
+export default ProductApproval;

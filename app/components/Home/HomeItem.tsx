@@ -35,9 +35,9 @@ export const HomeComponent = ({ props, tab, setTab }: any) => {
     case "product_create":
       return <ProductCreate props={props} tab={tab} setTab={setTab} />;
     case "sample_product":
-      return <SampleProduct />;
+      return <SampleProduct props={props} tab={tab} setTab={setTab} />;
     case "product_approval":
-      return <ProductApproval />;
+      return <ProductApproval props={props} tab={tab} setTab={setTab} />;
     default:
       return <HomeContent />;
   }

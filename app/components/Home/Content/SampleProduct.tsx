@@ -6,7 +6,6 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import Axios from "../../Axios";
 import {
   buyer,
-  category,
   contact,
   line,
   vendor,
@@ -28,10 +27,14 @@ import {
   SampleProductFail,
   SampleProductRequest,
   SampleProductSuccess,
+  SampleProductValidationFail,
+  SampleProductValidationRequest,
+  SampleProductValidationSuccess,
 } from "@/app/redux/reducers/productReducer";
 import Processing from "../../Processing";
 import SampleAddProcess from "../../utils/SampleAddProcess";
 import SampleProductMenu from "../SideMenu/SampleProductMenu";
+import SampleAddImage from "../../utils/SampleAddImage";
 
 const SampleProduct = ({ props, setTab, tab }: any) => {
   const dispatch = useDispatch();
@@ -39,9 +42,11 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
     sampleProductLoading,
     sampleProductSuccess,
     sampleProductError,
+    sampleProductValidationLoading,
 
     sampleProduct,
   } = useSelector((state: RootState) => state.sampleProduct);
+  const { user } = useSelector((state: RootState) => state.user);
 
   const [idDisable, setIdDisable] = useState(false);
 
@@ -49,6 +54,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
 
   /* =========== ADD PROCESS SHOW ============= */
   const [showProcessActive, setShowProcessActive] = useState(true);
+  const [productImage, setProductImage] = useState<string | undefined>();
 
   const handleShowAddProcess = (e: any) => {
     e.preventDefault();
@@ -78,6 +84,51 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
     }
 
     const modal = document.getElementById("my_modal_2");
+    if (modal) {
+      (modal as HTMLDialogElement).showModal();
+      setShowProcessActive(false);
+
+      const handleModalClose = () => {
+        setShowProcessActive(true);
+        modal.removeEventListener("close", handleModalClose);
+      };
+
+      modal.addEventListener("close", handleModalClose);
+    } else {
+      console.error("Modal element not found!");
+    }
+  };
+  const handleShowAddImage = (e: any) => {
+    e.preventDefault();
+
+    const validateWithRegex = (pid: string) => {
+      const pattern = /^SMPL\/\d{4}\/\d{5}$/;
+      return pattern.test(pid);
+    };
+
+    const p_id = getValues("p_id");
+    const productLine = watch("line");
+    const productDesc = watch("desc");
+
+    if (validateWithRegex(p_id) === false) {
+      return toast.error("NEED VALID PID");
+    }
+    if (idDisable === false) {
+      return toast.error("PLEASE ENTER A VALID PID NUMBER THEN PRESS ENTER");
+    }
+
+    if (productLine === undefined || productLine === "") {
+      return toast.error("NEED A PRODUCT LINE");
+    }
+
+    if (productDesc === "") {
+      return toast.error("NEED PRODUCT DESCRIPTION");
+    }
+
+    if (productStatus == "Validated") {
+      return null;
+    }
+    const modal = document.getElementById("my_modal_3");
     if (modal) {
       (modal as HTMLDialogElement).showModal();
       setShowProcessActive(false);
@@ -152,7 +203,6 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
           comments: dataInput.comments,
         };
         const { data } = await Axios.post("/create/sample/product", userData);
-        console.log(data);
 
         dispatch(SampleProductSuccess(data));
       } catch (err: any) {
@@ -197,10 +247,34 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
         const { data } = await Axios.post("/create/sample/product", userData);
 
         dispatch(SampleProductSuccess(data));
-        console.log(data);
       } catch (err: any) {
         dispatch(SampleProductFail(err.response.data.message));
       }
+    }
+  };
+  const [productStatus, setProductStatus] = useState<string>("Entry Mode");
+  const productValidation = async (e: any) => {
+    e.preventDefault();
+    const validateWithRegex = (pid: string) => {
+      const pattern = /^SMPL\/\d{4}\/\d{5}$/;
+      return pattern.test(pid);
+    };
+    if (validateWithRegex(getValues("p_id")) === false) {
+      return;
+    }
+    try {
+      dispatch(SampleProductValidationRequest());
+      const userData = {
+        id: sampleProduct?.p_id,
+        mode: sampleProduct?.status.mode,
+        user: user?._id,
+      };
+
+      const { data } = await Axios.put("/sample/product/validation", userData);
+
+      dispatch(SampleProductValidationSuccess(data));
+    } catch (err: any) {
+      dispatch(SampleProductValidationFail(err.response.data.message));
     }
   };
 
@@ -351,6 +425,8 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
       setIdDisable(true);
       setProductProcess(sampleProduct?.process.length > 0 ? true : false);
       setValue("p_id", sampleProduct?.p_id ? sampleProduct.p_id : "New");
+      setProductImage(sampleProduct?.image?.url);
+      setProductStatus(sampleProduct?.status.mode);
 
       setValue(
         "recieve",
@@ -448,13 +524,25 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
               className="input"
               defaultValue={new Date(Date.now()).toISOString().split("T")[0]}
               {...sampleProductRegister("recieve")}
+              disabled={productStatus === "Validated" ? true : false}
             />
           </div>
           <div>
             <label className="text-xs font-bold">Status</label>
             <br />
-            <button className="border border-black rounded-sm px-4 py-1 text-sm bg-red-300 cursor-pointer">
-              Entry Mode
+            <button
+              onClick={(e) => productValidation(e)}
+              className={`border border-black rounded-sm px-4 py-1 text-sm  cursor-pointer ${
+                productStatus === "Validated" ? "bg-green-400" : "  bg-red-300"
+              }`}
+            >
+              {sampleProductValidationLoading ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : productStatus ? (
+                productStatus
+              ) : (
+                "Entry Mode"
+              )}
             </button>
           </div>
         </div>
@@ -473,6 +561,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                       {...sampleProductRegister("buyer")}
                       onChange={handleShowBuyerChange}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Validated" ? true : false}
                     >
                       {organization ? (
                         <option value="" className="hidden"></option>
@@ -507,6 +596,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                       }
                       onChange={handleShowVendorChange}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Validated" ? true : false}
                     >
                       {showSelectedBuyer ? (
                         <option value="" className="hidden"></option>
@@ -541,6 +631,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                       value={showSelectedContact?.name || ""}
                       onChange={handleShowContactChange}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Validated" ? true : false}
                     >
                       {showSelectedVendor ? (
                         <option value="" className="hidden"></option>
@@ -568,6 +659,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                     <select
                       {...sampleProductRegister("sales")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Validated" ? true : false}
                     >
                       <option value="" className="hidden"></option>
                       <option>Pantha Acharjee</option>
@@ -592,6 +684,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                       {...sampleProductRegister("line")}
                       onChange={handleLineChange}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Validated" ? true : false}
                     >
                       <option value="" className="hidden"></option>
                       {getLine?.map((val, ind) => {
@@ -614,6 +707,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                       }
                       onChange={handleCategoryChange}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Validated" ? true : false}
                     >
                       {selectedLine ? (
                         <option value="" className="hidden"></option>
@@ -649,6 +743,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                       type="text"
                       className="input w-11/12"
                       {...sampleProductRegister("desc")}
+                      disabled={productStatus === "Validated" ? true : false}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -657,6 +752,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                       type="text"
                       className="input w-11/12"
                       {...sampleProductRegister("code")}
+                      disabled={productStatus === "Validated" ? true : false}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -665,6 +761,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                       type="text"
                       className="input w-11/12"
                       {...sampleProductRegister("ref")}
+                      disabled={productStatus === "Validated" ? true : false}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -673,6 +770,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                       type="text"
                       className="input w-11/12"
                       {...sampleProductRegister("hs_code")}
+                      disabled={productStatus === "Validated" ? true : false}
                     />
                   </div>
                 </div>
@@ -689,6 +787,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                       type="number"
                       className="input w-11/12"
                       {...sampleProductRegister("width")}
+                      disabled={productStatus === "Validated" ? true : false}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -697,6 +796,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                       type="number"
                       className="input w-11/12"
                       {...sampleProductRegister("height")}
+                      disabled={productStatus === "Validated" ? true : false}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -705,6 +805,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                       type="number"
                       className="input w-11/12"
                       {...sampleProductRegister("length")}
+                      disabled={productStatus === "Validated" ? true : false}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -712,6 +813,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                     <select
                       {...sampleProductRegister("dimension_unit")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Validated" ? true : false}
                     >
                       <option value="" className="hidden"></option>
                       <option>mm</option>
@@ -732,6 +834,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                     <select
                       {...sampleProductRegister("page_part")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Validated" ? true : false}
                     >
                       <option value="" className="hidden"></option>
                       <option>Page</option>
@@ -745,6 +848,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                       className="w-11/12 focus:outline-none focus:ring-0  select"
                       {...sampleProductRegister("set")}
                       defaultValue={"false"}
+                      disabled={productStatus === "Validated" ? true : false}
                     >
                       <option value={"true"}>Yes</option>
                       <option value={"false"}>No</option>
@@ -755,6 +859,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                     <select
                       {...sampleProductRegister("weight_per_pcs")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Validated" ? true : false}
                     >
                       <option value="" className="hidden"></option>
                       <option>1000</option>
@@ -769,6 +874,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                       type="number"
                       className="input w-11/12"
                       {...sampleProductRegister("weight")}
+                      disabled={productStatus === "Validated" ? true : false}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -776,6 +882,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                     <select
                       {...sampleProductRegister("weight_unit")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Validated" ? true : false}
                     >
                       <option value="" className="hidden"></option>
                       <option>gm</option>
@@ -799,6 +906,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                     <select
                       {...sampleProductRegister("order_unit")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Validated" ? true : false}
                     >
                       <option value="" className="hidden"></option>
                       <option>Quantity</option>
@@ -819,6 +927,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                       type="number"
                       className="input w-11/12"
                       {...sampleProductRegister("moq")}
+                      disabled={productStatus === "Validated" ? true : false}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -826,6 +935,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                     <select
                       {...sampleProductRegister("moq_unit")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Validated" ? true : false}
                     >
                       <option value="" className="hidden"></option>
                       <option>Pcs</option>
@@ -852,6 +962,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                         new Date(Date.now()).toISOString().split("T")[0]
                       }
                       {...sampleProductRegister("last_price")}
+                      disabled={productStatus === "Validated" ? true : false}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -859,6 +970,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                     <select
                       {...sampleProductRegister("currency")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
+                      disabled={productStatus === "Validated" ? true : false}
                     >
                       <option value="" className="hidden"></option>
                       <option>USD</option>
@@ -871,6 +983,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                       {...sampleProductRegister("price_unit")}
                       className="w-11/12 focus:outline-none focus:ring-0  select"
                       defaultValue={"Pcs"}
+                      disabled={productStatus === "Validated" ? true : false}
                     >
                       <option value={"Pcs"}>Pcs</option>
                       <option value={"Pair"}>Pair</option>
@@ -884,6 +997,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                       type="number"
                       className="input w-11/12"
                       {...sampleProductRegister("full_part")}
+                      disabled={productStatus === "Validated" ? true : false}
                     />
                   </div>
                   {watch("price_unit") === "Set" && (
@@ -895,6 +1009,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                         type="number"
                         className="input w-11/12"
                         {...sampleProductRegister("half_part")}
+                        disabled={productStatus === "Validated" ? true : false}
                       />
                     </div>
                   )}
@@ -917,6 +1032,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                         new Date(Date.now()).toISOString().split("T")[0]
                       }
                       {...sampleProductRegister("sample_date")}
+                      disabled={productStatus === "Validated" ? true : false}
                     />
                   </div>
                   <div className="fieldset w-3/12">
@@ -925,6 +1041,7 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                       type="text"
                       className="input w-11/12"
                       {...sampleProductRegister("comments")}
+                      disabled={productStatus === "Validated" ? true : false}
                     />
                   </div>
                 </div>
@@ -989,10 +1106,17 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
                 })}
             </div>
 
-            <button className="mt-5 w-full border border-black rounded-sm px-4 py-2 text-sm font-bold bg-blue-100 cursor-pointer">
+            <button
+              onClick={handleShowAddImage}
+              className="mt-5 w-full border border-black rounded-sm px-4 py-2 text-sm font-bold bg-blue-100 cursor-pointer"
+            >
               Add Sample
             </button>
-            <div className="border border-black w-full h-96 mt-3 rounded-md px-4 py-3 overflow-y-auto scroll-auto"></div>
+            <div className="border border-black w-full h-96 mt-3 rounded-md px-4 py-3 overflow-y-auto scroll-auto">
+              <div className="">
+                {sampleProduct?.image?.url && <img src={productImage} />}
+              </div>
+            </div>
           </div>
         </div>
       </form>
@@ -1012,6 +1136,9 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
           setShowSelectedContact={setShowSelectedContact}
           setSelectedLine={setSelectedLine}
           setSelectedCategory={setSelectedCategory}
+          setProductStatus={setProductStatus}
+          setProductImage={setProductImage}
+          id={sampleProduct?._id}
         />
       </div>
       <dialog id="my_modal_2" className="modal w-full">
@@ -1020,6 +1147,12 @@ const SampleProduct = ({ props, setTab, tab }: any) => {
           productDesc={getValues("desc")}
           productLine={getValues("line")}
         />
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
+      <dialog id="my_modal_3" className="modal w-full">
+        <SampleAddImage p_id={getValues("p_id")} />
         <form method="dialog" className="modal-backdrop">
           <button>close</button>
         </form>

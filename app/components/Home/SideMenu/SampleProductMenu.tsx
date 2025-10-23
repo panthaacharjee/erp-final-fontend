@@ -12,11 +12,11 @@ import {
 } from "@/app/redux/reducers/tabReducer";
 import { toast } from "react-toastify";
 import {
-  ClearProductRefresh,
-  ClearProductSuccess,
-  ProductFail,
-  ProductRequest,
-  ProductSuccess,
+  ClearSampleProductRefresh,
+  SampleProductRequest,
+  ClearSampleProductSuccess,
+  SampleProductSuccess,
+  SampleProductFail,
 } from "@/app/redux/reducers/productReducer";
 
 const SampleProductMenu = ({
@@ -33,6 +33,9 @@ const SampleProductMenu = ({
   setTab,
   props,
   setFocus,
+  setProductStatus,
+  setProductImage,
+  id,
 }: any) => {
   const dispatch = useDispatch();
   const { items, content } = useSelector((state: RootState) => state.tab);
@@ -86,22 +89,71 @@ const SampleProductMenu = ({
     setShowSelectedVendor(undefined);
     setSelectedLine(undefined);
     setSelectedCategory(undefined);
+    setProductStatus("Entry Mode");
+    setProductImage(undefined);
 
-    // dispatch(ClearProductRefresh());
+    dispatch(ClearSampleProductRefresh());
   };
 
   const handleSaveButton = async () => {
     if (getValues("p_id") === "New") {
       if (getValues("buyer") === "") {
         return setFocus("buyer");
-      }
-      if (getValues("sales") === "") {
+      } else if (getValues("sales") === "") {
         return setFocus("sales");
+      } else {
+        try {
+          dispatch(ClearSampleProductSuccess());
+          dispatch(SampleProductRequest());
+          const config = { headers: { "Content-Type": "application/json" } };
+          const userData = {
+            p_id: getValues("p_id"),
+            recieve: getValues("recieve"),
+            buyer: getValues("buyer"),
+            vendor: getValues("vendor"),
+            contact: getValues("contact"),
+            sales: getValues("sales"),
+            line: getValues("line"),
+            category: getValues("category"),
+            desc: getValues("desc"),
+            ref: getValues("ref"),
+            code: getValues("code"),
+            hs_code: getValues("hs_code"),
+            height: getValues("height"),
+            width: getValues("width"),
+            length: getValues("length"),
+            dimension_unit: getValues("dimension_unit"),
+            page_part: getValues("page_part"),
+            set: getValues("set"),
+            weight: getValues("weight"),
+            weight_per_pcs: getValues("weight_per_pcs"),
+            weight_unit: getValues("weight_unit"),
+            order_unit: getValues("order_unit"),
+            moq: getValues("moq"),
+            moq_unit: getValues("moq_unit"),
+            last_price: getValues("last_price"),
+            currency: getValues("currency"),
+            full_part: getValues("full_part"),
+            half_part: getValues("half_part"),
+            price_unit: getValues("price_unit"),
+            sample_date: getValues("sample_date"),
+            comments: getValues("comments"),
+          };
+          const { data } = await Axios.post(
+            `/create/sample/product`,
+
+            userData,
+            config
+          );
+          dispatch(SampleProductSuccess(data));
+        } catch (err: any) {
+          dispatch(SampleProductFail(err.response.data.message));
+        }
       }
     } else {
       try {
-        dispatch(ClearProductSuccess());
-        dispatch(ProductRequest());
+        dispatch(ClearSampleProductSuccess());
+        dispatch(SampleProductRequest());
         const config = { headers: { "Content-Type": "application/json" } };
         const userData = {
           p_id: getValues("p_id"),
@@ -142,9 +194,9 @@ const SampleProductMenu = ({
           userData,
           config
         );
-        dispatch(ProductSuccess(data));
+        dispatch(SampleProductSuccess(data));
       } catch (err: any) {
-        dispatch(ProductFail(err.response.data.message));
+        dispatch(SampleProductFail(err.response.data.message));
       }
     }
   };
@@ -201,7 +253,8 @@ const SampleProductMenu = ({
     setSelectedLine(undefined);
     setSelectedCategory(undefined);
 
-    // dispatch(ClearProductRefresh());
+    dispatch(ClearSampleProductRefresh());
+
     dispatch(RemoveTabRequest());
     const data = {
       loading: false,
@@ -220,78 +273,78 @@ const SampleProductMenu = ({
   };
 
   const handlePrint = async () => {
-    // if (getValues("employeeId") === "new") {
-    //   toast("EMPLOYEE NOT FOUND");
-    // }
-    // try {
-    //   const response = await Axios.get(`/employee/details/${id}`, {
-    //     responseType: "blob",
-    //   });
-    //   const blob = new Blob([response.data], { type: "application/pdf" });
-    //   const url = window.URL.createObjectURL(blob);
-    //   // Open in new window with proper null checks
-    //   const printWindow = window.open(url);
-    //   if (printWindow) {
-    //     // Add event listener for when the window loads
-    //     printWindow.addEventListener(
-    //       "load",
-    //       () => {
-    //         // Additional safety check
-    //         if (!printWindow.closed) {
-    //           printWindow.print();
-    //         }
-    //       },
-    //       { once: true }
-    //     );
-    //     // Fallback in case the load event doesn't fire
-    //     setTimeout(() => {
-    //       if (printWindow && !printWindow.closed) {
-    //         printWindow.print();
-    //       }
-    //     }, 1000);
-    //   } else {
-    //     // Popup was blocked - use iframe fallback
-    //     const iframe = document.createElement("iframe");
-    //     iframe.style.display = "none";
-    //     iframe.src = url;
-    //     document.body.appendChild(iframe);
-    //     iframe.onload = () => {
-    //       setTimeout(() => {
-    //         iframe.contentWindow?.print();
-    //         // Clean up
-    //         window.URL.revokeObjectURL(url);
-    //         document.body.removeChild(iframe);
-    //       }, 1000);
-    //     };
-    //   }
-    //   // Cleanup URL object after printing
-    //   setTimeout(() => {
-    //     window.URL.revokeObjectURL(url);
-    //   }, 10000);
-    // } catch (err) {
-    //   console.error("Error handling PDF:", err);
-    //   // Add user feedback here
-    // }
+    if (getValues("employeeId") === "new") {
+      toast("EMPLOYEE NOT FOUND");
+    }
+    try {
+      const response = await Axios.get(`/sample/product/details/${id}`, {
+        responseType: "blob",
+      });
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      // Open in new window with proper null checks
+      const printWindow = window.open(url);
+      if (printWindow) {
+        // Add event listener for when the window loads
+        printWindow.addEventListener(
+          "load",
+          () => {
+            // Additional safety check
+            if (!printWindow.closed) {
+              printWindow.print();
+            }
+          },
+          { once: true }
+        );
+        // Fallback in case the load event doesn't fire
+        setTimeout(() => {
+          if (printWindow && !printWindow.closed) {
+            printWindow.print();
+          }
+        }, 1000);
+      } else {
+        // Popup was blocked - use iframe fallback
+        const iframe = document.createElement("iframe");
+        iframe.style.display = "none";
+        iframe.src = url;
+        document.body.appendChild(iframe);
+        iframe.onload = () => {
+          setTimeout(() => {
+            iframe.contentWindow?.print();
+            // Clean up
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(iframe);
+          }, 1000);
+        };
+      }
+      // Cleanup URL object after printing
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 10000);
+    } catch (err) {
+      console.error("Error handling PDF:", err);
+      // Add user feedback here
+    }
   };
 
   const handleDownload = async () => {
-    // try {
-    //   const response = await Axios.get(`/employee/details/${id}`, {
-    //     responseType: "blob", // Important for binary data
-    //   });
-    //   // Create a blob URL for the PDF
-    //   const url = window.URL.createObjectURL(new Blob([response.data]));
-    //   const link = document.createElement("a");
-    //   link.href = url;
-    //   link.setAttribute("download", `${user?.employeeId}-details.pdf`);
-    //   document.body.appendChild(link);
-    //   link.click();
-    //   // Clean up
-    //   window.URL.revokeObjectURL(url);
-    //   document.body.removeChild(link);
-    // } catch (err) {
-    //   console.error("Error downloading PDF:", err);
-    // }
+    try {
+      const response = await Axios.get(`/sample/product/details/${id}`, {
+        responseType: "blob", // Important for binary data
+      });
+      // Create a blob URL for the PDF
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `sample-details.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Error downloading PDF:", err);
+    }
   };
 
   useEffect(() => {}, []);

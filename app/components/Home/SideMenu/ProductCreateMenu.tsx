@@ -83,7 +83,6 @@ const ProductCreateMenu = ({
     setValue("full_part", NaN);
     setValue("half_part", NaN);
     setValue("comments", "");
-    setProductImage(undefined);
 
     setShowSelectedBuyer(undefined);
     setShowSelectedContact(undefined);
@@ -91,6 +90,7 @@ const ProductCreateMenu = ({
     setSelectedLine(undefined);
     setSelectedCategory(undefined);
     setProductStatus("Entry Mode");
+    setProductImage(undefined);
 
     dispatch(ClearProductRefresh());
   };
@@ -99,9 +99,56 @@ const ProductCreateMenu = ({
     if (getValues("p_id") === "New") {
       if (getValues("buyer") === "") {
         return setFocus("buyer");
-      }
-      if (getValues("sales") === "") {
+      } else if (getValues("sales") === "") {
         return setFocus("sales");
+      } else {
+        try {
+          dispatch(ClearProductSuccess());
+          dispatch(ProductRequest());
+          const config = { headers: { "Content-Type": "application/json" } };
+          const userData = {
+            p_id: getValues("p_id"),
+            recieve: getValues("recieve"),
+            buyer: getValues("buyer"),
+            vendor: getValues("vendor"),
+            contact: getValues("contact"),
+            sales: getValues("sales"),
+            line: getValues("line"),
+            category: getValues("category"),
+            desc: getValues("desc"),
+            ref: getValues("ref"),
+            code: getValues("code"),
+            hs_code: getValues("hs_code"),
+            height: getValues("height"),
+            width: getValues("width"),
+            length: getValues("length"),
+            dimension_unit: getValues("dimension_unit"),
+            page_part: getValues("page_part"),
+            set: getValues("set"),
+            weight: getValues("weight"),
+            weight_per_pcs: getValues("weight_per_pcs"),
+            weight_unit: getValues("weight_unit"),
+            order_unit: getValues("order_unit"),
+            moq: getValues("moq"),
+            moq_unit: getValues("moq_unit"),
+            last_price: getValues("last_price"),
+            currency: getValues("currency"),
+            full_part: getValues("full_part"),
+            half_part: getValues("half_part"),
+            price_unit: getValues("price_unit"),
+            sample_date: getValues("sample_date"),
+            comments: getValues("comments"),
+          };
+          const { data } = await Axios.post(
+            `/create/product`,
+
+            userData,
+            config
+          );
+          dispatch(ProductSuccess(data));
+        } catch (err: any) {
+          dispatch(ProductFail(err.response.data.message));
+        }
       }
     } else {
       try {
@@ -205,6 +252,8 @@ const ProductCreateMenu = ({
     setShowSelectedVendor(undefined);
     setSelectedLine(undefined);
     setSelectedCategory(undefined);
+    setProductStatus("Entry Mode");
+    setProductImage(undefined);
 
     dispatch(ClearProductRefresh());
     dispatch(RemoveTabRequest());
