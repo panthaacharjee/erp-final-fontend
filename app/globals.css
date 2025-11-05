@@ -1,7 +1,7 @@
 @import "tailwindcss";
- @plugin "daisyui" {
-   themes: light --default;
- }
+@plugin "daisyui" {
+  themes: light --default;
+}
 
 :root {
   --background: #ffffff;
@@ -28,7 +28,6 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-
 /* Chrome, Safari, Edge, Opera */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
@@ -52,9 +51,10 @@ input[type="number"] {
   height: 0; /* Chrome, Safari, Opera */
 }
 
-.bg-image{
+.bg-image {
   /* background: url("../images/loginbg.jpg"), linear-gradient(bottom right, rgba(255, 0, 0, 0.808), rgba(0, 0, 255, 0.76)); */
-  background: linear-gradient(to right, #1b1c20b6, #1b1c20c0), url("../images/loginbg.jpg");
+  background: linear-gradient(to right, #1b1c20b6, #1b1c20c0),
+    url("../images/loginbg.jpg");
   background-repeat: no-repeat;
   background-size: cover;
   background-position: top center;
@@ -62,15 +62,14 @@ input[type="number"] {
   height: 100vh;
 }
 
-.sidebar-content-div-p{
+.sidebar-content-div-p {
   color: black;
 }
 
-.sidebar-content-div:hover .sidebar-content-div-p{
-  color:white
+.sidebar-content-div:hover .sidebar-content-div-p {
+  color: white;
 }
 
-.sidebar-content-div:hover .sidebar-content-div-p:hover{
-  color:yellow
+.sidebar-content-div:hover .sidebar-content-div-p:hover {
+  color: yellow;
 }
-

@@ -15,6 +15,8 @@ import Organization from "./Content/Organization";
 import ProductDetails from "./Content/ProductDetails";
 import ProductProcess from "./Content/ProductProcess";
 import { IoIosBusiness } from "react-icons/io";
+import { LiaShippingFastSolid } from "react-icons/lia";
+import OrderCreate from "./Content/OrderCreate";
 
 export const HomeComponent = ({ props, tab, setTab }: any) => {
   switch (props.element) {
@@ -38,6 +40,8 @@ export const HomeComponent = ({ props, tab, setTab }: any) => {
       return <SampleProduct props={props} tab={tab} setTab={setTab} />;
     case "product_approval":
       return <ProductApproval props={props} tab={tab} setTab={setTab} />;
+    case "order_create":
+      return <OrderCreate props={props} tab={tab} setTab={setTab} />;
     default:
       return <HomeContent />;
   }
@@ -65,6 +69,8 @@ export const HomeIcon = ({ props }: any) => {
       return <TiSocialDribbbleCircular />;
     case "product_approval":
       return <FcApproval />;
+    case "order_create":
+      return <LiaShippingFastSolid />;
     default:
       return <TiHome />;
   }

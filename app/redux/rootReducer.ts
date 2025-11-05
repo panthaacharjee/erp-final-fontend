@@ -11,6 +11,7 @@ import {
   productReducer,
   sampleProductReducer,
 } from "./reducers/productReducer";
+import { orderReducer } from "./reducers/orderReducer";
 // Import other reducers
 
 const rootReducer = combineReducers({
@@ -23,6 +24,7 @@ const rootReducer = combineReducers({
   process: processReducer,
   product: productReducer,
   sampleProduct: sampleProductReducer,
+  order: orderReducer,
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

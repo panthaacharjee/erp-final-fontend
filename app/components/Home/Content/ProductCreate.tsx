@@ -690,7 +690,7 @@ const ProductCreate = ({ props, setTab, tab }: any) => {
                       disabled={productStatus === "Entry Mode" ? false : true}
                     >
                       <option value="" className="hidden"></option>
-                      {getLine?.map((val, ind) => {
+                      {getLine?.map((val: any, ind: any) => {
                         return (
                           <option key={ind} value={val.name}>
                             {val.name}
