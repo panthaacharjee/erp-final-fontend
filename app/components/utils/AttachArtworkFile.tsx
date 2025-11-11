@@ -1,72 +1,163 @@
-import Image from "next/image";
 import React, { useState } from "react";
-import { SubmitHandler } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import Axios from "../Axios";
-import {
-  ProductImageFail,
-  ProductImageRequest,
-  ProductImageSuccess,
-} from "@/app/redux/reducers/productReducer";
+
 import { RootState } from "@/app/redux/rootReducer";
+import {
+  ArtworkFileError,
+  ArtworkFileRequest,
+  ArtworkFileSuccess,
+} from "@/app/redux/reducers/orderReducer";
 
-const AttachArtworkFile = ({ p_id }: any) => {
+const AttachArtworkFile = ({
+  orderId,
+  buyer,
+  vendor,
+  cs,
+  season,
+  order_date,
+}: any) => {
   const dispatch = useDispatch();
-  const { productImageLoading } = useSelector(
-    (state: RootState) => state.product
-  );
+  const { artworkLoading } = useSelector((state: RootState) => state.order);
 
-  const [selectedImage, setSelectedFile] = useState<any>();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
 
-  const handleFileChange = (e: any) => {
-    if (e.target.name === "file") {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (reader.readyState === 2) {
-          setSelectedFile(reader.result);
-        }
-      };
-      reader.readAsDataURL(e.target.files[0]);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+
+      // Create preview for images
+      if (file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewUrl(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setPreviewUrl("");
+      }
     }
   };
 
   const handleSave = async () => {
+    if (!selectedFile) {
+      alert("Please select a file first");
+      return;
+    }
+
     try {
-      dispatch(ProductImageRequest());
+      dispatch(ArtworkFileRequest());
 
       const formData = new FormData();
-      formData.append("file", selectedImage);
+      formData.append("file", selectedFile);
+      formData.append("orderId", orderId);
 
-      const { data } = await Axios.put("/product/image/upload", {
-        file: selectedImage,
-        p_id,
+      const { data } = await Axios.put("/artwork/file/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
-      dispatch(ProductImageSuccess(data));
+
+      dispatch(ArtworkFileSuccess(data));
+      alert("File uploaded successfully!");
+
+      // Reset after successful upload
+      setSelectedFile(null);
+      setPreviewUrl("");
+      const fileInput = document.querySelector(
+        'input[type="file"]'
+      ) as HTMLInputElement;
+      if (fileInput) fileInput.value = "";
     } catch (err: any) {
-      dispatch(ProductImageFail(err.response.data.message));
+      dispatch(
+        ArtworkFileError(err.response?.data?.message || "Upload failed")
+      );
+      alert(err.response?.data?.message || "Upload failed");
     }
   };
+
   return (
     <div className="modal-box min-w-4xl">
-      <div className="flex justify-between">
+      <div className="flex justify-between mb-4">
         <input
           type="file"
           name="file"
-          accept="image/*"
           onChange={handleFileChange}
           className="file-input file-input-neutral shadow-md"
+          accept=".xls,.xlsx,.pdf,.png,.jpg,.jpeg"
         />
-        <button onClick={handleSave} className="btn btn-neutral">
-          {productImageLoading ? (
+        <button
+          onClick={handleSave}
+          className="btn btn-neutral"
+          disabled={artworkLoading || !selectedFile}
+        >
+          {artworkLoading ? (
             <span className="loading loading-spinner loading-xs"></span>
           ) : (
             "Save"
           )}
         </button>
       </div>
-      <div className=" h-96 w-full border-[1px] solid border-black mt-2 rounded-lg flex items-center justify-center">
-        {selectedImage && (
-          <img src={selectedImage as string} className=" w-[80%] h-[80%]" />
+
+      {/* Your existing order details */}
+      <div className="flex flex-wrap">
+        <div className="fieldset w-4/12">
+          <legend className="fieldset-legend">Order ID</legend>
+          <p className="w-11/12 focus:outline-none focus:ring-0 input ">
+            {orderId}
+          </p>
+        </div>
+        <div className="fieldset w-4/12">
+          <legend className="fieldset-legend">Order Date</legend>
+          <p className="w-11/12 focus:outline-none focus:ring-0 input ">
+            {order_date}
+          </p>
+        </div>
+        <div className="fieldset w-4/12">
+          <legend className="fieldset-legend">Season</legend>
+          <p className="w-11/12 focus:outline-none focus:ring-0 input ">
+            {season}
+          </p>
+        </div>
+        <div className="fieldset w-4/12">
+          <legend className="fieldset-legend">Buyer</legend>
+          <p className="w-11/12 focus:outline-none focus:ring-0 input ">
+            {buyer}
+          </p>
+        </div>
+        <div className="fieldset w-4/12">
+          <legend className="fieldset-legend">Vendor</legend>
+          <p className="w-11/12 focus:outline-none focus:ring-0 input ">
+            {vendor}
+          </p>
+        </div>
+
+        <div className="fieldset w-4/12">
+          <legend className="fieldset-legend">Contact</legend>
+          <p className="w-11/12 focus:outline-none focus:ring-0 input ">{cs}</p>
+        </div>
+      </div>
+
+      {/* Preview section */}
+      <div className="h-64 w-full border-[1px] solid border-black mt-2 rounded-lg flex items-center justify-center">
+        {previewUrl ? (
+          <img
+            src={previewUrl}
+            className="w-[80%] h-[80%] object-contain"
+            alt="Preview"
+          />
+        ) : selectedFile ? (
+          <div className="text-center">
+            <p className="text-lg font-semibold">{selectedFile.name}</p>
+            <p className="text-sm text-gray-500">
+              {(selectedFile.size / 1024).toFixed(2)} KB
+            </p>
+            <p className="text-sm text-gray-500">{selectedFile.type}</p>
+          </div>
+        ) : (
+          <p className="text-gray-500">No file selected</p>
         )}
       </div>
     </div>

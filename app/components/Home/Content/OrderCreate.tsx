@@ -30,14 +30,19 @@ import {
   OrderFail,
   OrderRequest,
   OrderSuccess,
+  OrderValidationError,
+  OrderValidationRequest,
+  OrderValidationSuccess,
 } from "@/app/redux/reducers/orderReducer";
 import { IGetProduct } from "@/app/redux/interfaces/productInterface";
 
 const OrderCreate = ({ props, setTab, tab }: any) => {
-  const { data: session } = useSession();
   const dispatch = useDispatch();
 
-  const { order } = useSelector((state: RootState) => state.order);
+  const { order, orderValidationLoading, orderSuccess } = useSelector(
+    (state: RootState) => state.order
+  );
+  const { user } = useSelector((state: RootState) => state.user);
 
   const [idDisable, setIdDisable] = useState(false);
   const [isDetails, setIsDetails] = useState(false);
@@ -164,6 +169,8 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
   const [products, setProducts] = useState<IGetProduct[] | []>([]);
   const [selectedDesc, setSelectedDesc] = useState<IGetProduct | undefined>();
 
+  const [orderStatus, setOrderStatus] = useState<string>();
+
   const handleDescChange = (e: any) => {
     const descName = e.target.value;
     if (!descName) {
@@ -278,7 +285,36 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
     } else if (dataInput.orderId !== "New") {
       if (!isDetails) {
         await submitOrder();
+        if (showSize) {
+          setFocus("size_age");
+        }
       }
+    }
+  };
+
+  const handleValidation = async () => {
+    try {
+      dispatch(OrderValidationRequest());
+      const userData = {
+        batchJob: getValues("batchJob"),
+        id: getValues("orderId"),
+        mode: order?.status.mode || "Entry Mode",
+        user: user?._id,
+      };
+      const { data } = await Axios.put("/order/validation", userData);
+      dispatch(OrderValidationSuccess(data));
+    } catch (err: any) {
+      dispatch(OrderValidationError(err.response.data.message));
+    }
+  };
+
+  const handleJobBag = () => {
+    try {
+      const data = {
+        orderId: getValues("orderId"),
+      };
+    } catch (err: any) {
+      console.log(err);
     }
   };
 
@@ -504,6 +540,9 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
       order.orderDate ? (formatDate(order.orderDate) as any) : today
     );
 
+    setValue("batchJob", order?.status.batchJob as string);
+    setOrderStatus(order?.status.mode as string);
+
     // Reset form fields based on conditions
     if (isDetails && getValues("serial") !== order?.orderDetails?.length) {
       setValue("order_qty", NaN);
@@ -551,6 +590,12 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
     getValues("category"),
     watch("category"),
   ]);
+
+  useEffect(() => {
+    if (orderSuccess) {
+      toast(orderSuccess);
+    }
+  }, [orderSuccess]);
 
   /* ==================================== */
   /* =========  Updatation ========== */
@@ -614,12 +659,12 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
               className="input w-full focus:outline-none focus:ring-0  "
               defaultValue={new Date(Date.now()).toISOString().split("T")[0]}
               {...orderRegister("orderDate")}
-              disabled={isDetails === true}
+              disabled={isDetails === true || orderStatus === "Validated"}
             />
           </div>
-          {order?.status.mode === "Validated" && (
+          {orderStatus === "Validated" && (
             <div className="fieldset w-1/12">
-              <legend className="fieldset-legend">Order Bag</legend>
+              <legend className="fieldset-legend"></legend>
               <button className="border border-[#b3b3b3] text-[#333333] rounded-sm px-4 py-2 text-sm  cursor-pointer  font-bold">
                 Job Bag
               </button>
@@ -627,16 +672,32 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
           )}
           <div className="fieldset w-2/12">
             <legend className="fieldset-legend">Batch Job Bag</legend>
-            <select className="focus:outline-none focus:ring-0  select">
-              <option>Model</option>
-              <option>Pack/Art/Item</option>
-              <option>Style/CC/Item</option>
+            <select
+              {...orderRegister("batchJob")}
+              className="focus:outline-none focus:ring-0  select"
+              disabled={orderStatus === "Validated"}
+            >
+              <option value={"None"}>None</option>
+              <option value={"Model"}>Model</option>
+              <option value={"Pack/Art/Item"}>Pack/Art/Item</option>
+              <option value={"Style/CC/Item"}>Style/CC/Item</option>
             </select>
           </div>
           <div className="fieldset w-2/12">
             <legend className="fieldset-legend">Status</legend>
-            <button className="border border-black rounded-sm px-4 py-2 text-sm  cursor-pointer bg-red-300 font-bold">
-              Entry Mode
+            <button
+              onClick={handleValidation}
+              className={`border border-black rounded-sm px-4 py-2 text-sm font-bold  cursor-pointer ${
+                orderStatus === "Validated" ? "bg-green-400 " : "  bg-red-300"
+              }`}
+            >
+              {orderValidationLoading ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : orderStatus ? (
+                orderStatus
+              ) : (
+                "Entry Mode"
+              )}
             </button>
           </div>
         </div>
@@ -648,8 +709,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                 {...orderRegister("buyer")}
                 onChange={handleShowBuyerChange}
                 className="w-11/12 focus:outline-none focus:ring-0  select"
-                disabled={isDetails === true}
-                // disabled={productStatus === "Entry Mode" ? false : true}
+                disabled={isDetails === true || orderStatus === "Validated"}
               >
                 {organization ? (
                   <option value="" className="hidden"></option>
@@ -677,7 +737,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                 type="text"
                 className="w-11/12 focus:outline-none focus:ring-0 input "
                 {...orderRegister("buyerRef")}
-                disabled={isDetails === true}
+                disabled={isDetails === true || orderStatus === "Validated"}
               />
             </div>
             <div className="fieldset w-3/12">
@@ -685,7 +745,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
               <select
                 {...orderRegister("sales")}
                 className="w-11/12 focus:outline-none focus:ring-0  select"
-                disabled={isDetails === true}
+                disabled={isDetails === true || orderStatus === "Validated"}
               >
                 <option value="" className="hidden"></option>
                 <option>Pantha Acharjee</option>
@@ -705,7 +765,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                     .split("T")[0]
                 }
                 {...orderRegister("req_date")}
-                disabled={isDetails === true}
+                disabled={isDetails === true || orderStatus === "Validated"}
               />
             </div>
             <div className="fieldset w-3/12">
@@ -717,7 +777,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                 }
                 onChange={handleShowVendorChange}
                 className="w-11/12 focus:outline-none focus:ring-0  select"
-                disabled={isDetails === true}
+                disabled={isDetails === true || orderStatus === "Validated"}
                 // disabled={productStatus === "Entry Mode" ? false : true}
               >
                 {showSelectedBuyer ? (
@@ -750,7 +810,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                 type="text"
                 className="w-11/12 focus:outline-none focus:ring-0 input "
                 {...orderRegister("vendorRef")}
-                disabled={isDetails === true}
+                disabled={isDetails === true || orderStatus === "Validated"}
               />
             </div>
             <div className="fieldset w-3/12">
@@ -759,7 +819,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                 value={showSelectedContact?.name || ""}
                 onChange={handleShowContactChange}
                 className="w-11/12 focus:outline-none focus:ring-0  select"
-                disabled={isDetails === true}
+                disabled={isDetails === true || orderStatus === "Validated"}
                 // disabled={productStatus === "Entry Mode" ? false : true}
               >
                 {showSelectedVendor ? (
@@ -787,7 +847,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
               <select
                 {...orderRegister("season")}
                 className="w-11/12 focus:outline-none focus:ring-0  select"
-                disabled={isDetails === true}
+                disabled={isDetails === true || orderStatus === "Validated"}
               >
                 {showSelectedVendor ? (
                   <option value="" className="hidden"></option>
@@ -807,14 +867,25 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                   })}
               </select>
             </div>
-            <div className="flex w-full mt-4">
-              <p
+            <div className="flex w-full mt-4 items-center">
+              <div
                 onClick={handleAttachFile}
-                className="py-2 px-4 border-[1px] border-[#b3b3b3] w-3/12 text-center cursor-pointer text-sm font-bold"
+                className=" min-h-10 px-4  border-[1px] border-[#b3b3b3] w-3/12 text-center cursor-pointer flex justify-center items-center"
               >
-                Attach Booking Sheet
-              </p>
-              <div className="w-8/12 py-4 px-4  border-[1px] border-[#b3b3b3] ml-4"></div>
+                <p className="text-sm font-bold">Attach Booking Sheet</p>
+              </div>
+
+              <div className="w-8/12  min-h-10  px-4  border-[1px] border-[#b3b3b3] ml-4 flex  items-center">
+                <a
+                  href={order?.booking?.url}
+                  download
+                  className="text-xs font text-blue-950 font-bold"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {order?.booking?.url}
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -868,7 +939,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                   {...orderRegister("line")}
                   onChange={handleLineChange}
                   className="w-11/12 focus:outline-none focus:ring-0  select"
-                  disabled={isDetails === false}
+                  disabled={isDetails === false || orderStatus === "Validated"}
                 >
                   <option value="" className="hidden"></option>
                   {getLine?.map((val: any, ind: any) => {
@@ -887,7 +958,11 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                   value={selectedCategory || ""}
                   onChange={handleCategoryChange}
                   className="w-11/12 focus:outline-none focus:ring-0  select"
-                  disabled={isDetails === false || orderDetails ? true : false}
+                  disabled={
+                    isDetails === false || orderDetails
+                      ? true
+                      : false || orderStatus === "Validated"
+                  }
                 >
                   {orderDetails ? (
                     <option value={orderDetails.category}>
@@ -919,7 +994,9 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                     {...orderRegister("desc")}
                     onChange={(e) => handleDescChange(e)}
                     disabled={
-                      isDetails === false || orderDetails ? true : false
+                      isDetails === false || orderDetails
+                        ? true
+                        : false || orderStatus === "Validated"
                     }
                   >
                     <option value="" className="hidden"></option>
@@ -953,7 +1030,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                 <input
                   type="text"
                   className="w-11/12 focus:outline-none focus:ring-0 input"
-                  disabled={isDetails === false}
+                  disabled={isDetails === false || orderStatus === "Validated"}
                   {...orderRegister("model")}
                 />
               </div>
@@ -962,7 +1039,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                 <input
                   type="text"
                   className="w-11/12 focus:outline-none focus:ring-0 input"
-                  disabled={isDetails === false}
+                  disabled={isDetails === false || orderStatus === "Validated"}
                   {...orderRegister("item_pact_art")}
                 />
               </div>
@@ -971,7 +1048,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                 <input
                   type="text"
                   className="w-11/12 focus:outline-none focus:ring-0 input"
-                  disabled={isDetails === false}
+                  disabled={isDetails === false || orderStatus === "Validated"}
                   {...orderRegister("style_cc_iman")}
                 />
               </div>
@@ -980,7 +1057,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                 <input
                   type="text"
                   className="w-11/12 focus:outline-none focus:ring-0 input "
-                  disabled={isDetails === false}
+                  disabled={isDetails === false || orderStatus === "Validated"}
                   {...orderRegister("variable")}
                 />
               </div>
@@ -989,7 +1066,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                 <input
                   type="text"
                   className="w-11/12 focus:outline-none focus:ring-0 input"
-                  disabled={isDetails === false}
+                  disabled={isDetails === false || orderStatus === "Validated"}
                   {...orderRegister("gmts_color")}
                 />
               </div>
@@ -998,7 +1075,11 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                 <input
                   type="text"
                   className="w-11/12 focus:outline-none focus:ring-0 input "
-                  disabled={isDetails === false || showSize === false}
+                  disabled={
+                    isDetails === false ||
+                    showSize === false ||
+                    orderStatus === "Validated"
+                  }
                   {...orderRegister("size_age")}
                 />
               </div>
@@ -1007,7 +1088,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                 <input
                   type="text"
                   className="w-11/12 focus:outline-none focus:ring-0 input"
-                  disabled={isDetails === false}
+                  disabled={isDetails === false || orderStatus === "Validated"}
                   {...orderRegister("ean_number")}
                 />
               </div>
@@ -1021,6 +1102,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                     setValue("size_age", "");
                     setValue("isSize", !showSize);
                   }}
+                  disabled={orderStatus === "Validated"}
                 />
               </div>
               <div className="fieldset w-3/12">
@@ -1028,7 +1110,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                 <input
                   type="number"
                   className="w-11/12 focus:outline-none focus:ring-0 input"
-                  disabled={isDetails === false}
+                  disabled={isDetails === false || orderStatus === "Validated"}
                   {...orderRegister("order_qty")}
                 />
               </div>
@@ -1036,7 +1118,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                 <legend className="fieldset-legend">Order Unit</legend>
                 <select
                   className="w-11/12 focus:outline-none focus:ring-0  select"
-                  disabled={isDetails === false}
+                  disabled={isDetails === false || orderStatus === "Validated"}
                   {...orderRegister("order_unit")}
                   value={
                     getValues("order_unit")
@@ -1061,7 +1143,11 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                 <input
                   type="number"
                   className="w-11/12 focus:outline-none focus:ring-0 input text-center"
-                  disabled={isDetails === false || orderUnit !== "Set"}
+                  disabled={
+                    isDetails === false ||
+                    orderUnit !== "Set" ||
+                    orderStatus === "Validated"
+                  }
                   {...orderRegister("page_part")}
                 />
               </div>
@@ -1151,13 +1237,23 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
               </div>
             </div>
             <div className="flex w-full mt-4">
-              <p
+              <div
                 onClick={handleAttachArtwork}
-                className="py-2 px-4 border-[1px] border-[#b3b3b3] w-3/12 text-center cursor-pointer text-sm font-bold"
+                className=" min-h-10 px-4  border-[1px] border-[#b3b3b3] w-3/12 text-center cursor-pointer flex justify-center items-center"
               >
-                Attach Artwork
-              </p>
-              <div className="w-8/12 py-4 px-4  border-[1px] border-[#b3b3b3] ml-4"></div>
+                <p className="text-sm font-bold">Attach Artwork</p>
+              </div>
+              <div className="w-8/12  min-h-10  px-4  border-[1px] border-[#b3b3b3] ml-4 flex  items-center">
+                <a
+                  href={order?.artwork?.url}
+                  download
+                  className="text-xs font text-blue-950 font-bold"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {order?.artwork?.url}
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -1273,10 +1369,38 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
       </div>
 
       <div className="w-[7%] bg-[#d3e6ec]  min-h-screen pt-14 px-2">
-        <OrganizationMenu tab={tab} setTab={setTab} props={props} />
+        <OrganizationMenu
+          tab={tab}
+          setTab={setTab}
+          props={props}
+          getValues={getValues}
+          setValue={setValue}
+          setFocus={setFocus}
+          setIdDisable={setIdDisable}
+          setOrderStatus={setOrderStatus}
+          setIsDetails={setIsDetails}
+          setShowSelectedVendor={setShowSelectedVendor}
+          setShowSelectedContact={setShowSelectedContact}
+          setOrderDetails={setOrderDetails}
+          setShowSize={setShowSize}
+          setSelectedDesc={setSelectedDesc}
+        />
       </div>
       <dialog id="my_modal_1" className="modal w-full">
         <AttachOrderFile
+          orderId={getValues("orderId")}
+          order_date={getValues("orderDate")}
+          buyer={getValues("buyer")}
+          vendor={getValues("vendor")}
+          cs={getValues("contact")}
+          season={getValues("season")}
+        />
+        <form method="dialog" className="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
+      <dialog id="my_modal_2" className="modal w-full">
+        <AttachArtworkFile
           orderId={getValues("orderId")}
           order_date={getValues("orderDate")}
           buyer={getValues("buyer")}
@@ -1285,13 +1409,10 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
           cs={getValues("contact")}
           season={getValues("season")}
           req_date={getValues("req_date")}
+          isDetails={isDetails}
+          showSize={showSize}
+          setFocus={setFocus}
         />
-        <form method="dialog" className="modal-backdrop">
-          <button>close</button>
-        </form>
-      </dialog>
-      <dialog id="my_modal_2" className="modal w-full">
-        <AttachArtworkFile />
         <form method="dialog" className="modal-backdrop">
           <button>close</button>
         </form>

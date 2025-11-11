@@ -4,6 +4,8 @@ export type IOrder = {
   orderId: string;
   orderDate: Date;
 
+  batchJob: string;
+
   buyer: string;
   buyerRef: string;
   vendor: string;
@@ -92,9 +94,18 @@ export interface orderState {
   orderLoading: boolean;
   orderSuccess: string | null;
   orderError: string | null;
+
   bookingLoading: boolean;
   bookingSuccess: string | null;
   bookingError: string | null;
+
+  artworkLoading: boolean;
+  artworkSuccess: string | null;
+  artworkError: string | null;
+
+  orderValidationLoading: boolean;
+  orderValidationSuccess: string | null;
+  orderValidationError: string | null;
 
   order: IGetOrder | null;
 }
