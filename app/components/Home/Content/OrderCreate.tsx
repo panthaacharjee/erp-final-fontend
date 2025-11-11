@@ -1384,6 +1384,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
           setOrderDetails={setOrderDetails}
           setShowSize={setShowSize}
           setSelectedDesc={setSelectedDesc}
+          setSelectedCategory={setSelectedCategory}
         />
       </div>
       <dialog id="my_modal_1" className="modal w-full">

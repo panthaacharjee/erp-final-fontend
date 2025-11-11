@@ -32,6 +32,7 @@ const OrganizationMenu = ({
   setIsDetails,
   setShowSelectedVendor,
   setShowSelectedContact,
+  setSelectedCategory,
   getValues,
   isDetails,
   setFocus,
@@ -65,6 +66,7 @@ const OrganizationMenu = ({
     setValue("season", "");
     setShowSelectedVendor(undefined);
     setShowSelectedContact(undefined);
+    setSelectedCategory(undefined);
     setOrderDetails(null);
     // Set dates with fallbacks
     const formatDate = (dateString: any) => {
