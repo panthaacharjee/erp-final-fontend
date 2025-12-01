@@ -27,6 +27,9 @@ import {
 
 import { IOrder, IOrderDetails } from "@/app/redux/interfaces/OrderInterface";
 import {
+  ClearOrderDeleteError,
+  ClearOrderDeleteSuccess,
+  ClearOrderSuccess,
   OrderFail,
   OrderRequest,
   OrderSuccess,
@@ -39,9 +42,13 @@ import { IGetProduct } from "@/app/redux/interfaces/productInterface";
 const OrderCreate = ({ props, setTab, tab }: any) => {
   const dispatch = useDispatch();
 
-  const { order, orderValidationLoading, orderSuccess } = useSelector(
-    (state: RootState) => state.order
-  );
+  const {
+    order,
+    orderValidationLoading,
+    orderSuccess,
+    orderDeleteSuccess,
+    orderDeleteError,
+  } = useSelector((state: RootState) => state.order);
   const { user } = useSelector((state: RootState) => state.user);
 
   const [idDisable, setIdDisable] = useState(false);
@@ -128,21 +135,21 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
   const book_quantity =
     order &&
     order.orderDetails.reduce(
-      (accumulator, currentValue) => accumulator + currentValue.order_qty,
+      (accumulator: any, currentValue) => accumulator + currentValue.order_qty,
       0
     );
 
   const base_qty_full_part_total =
     order?.orderDetails &&
     order.orderDetails.reduce(
-      (accumulator, currentValue) =>
+      (accumulator: any, currentValue) =>
         accumulator + currentValue.base_qty_full_part,
       0
     );
   const base_qty_half_part_total =
     order?.orderDetails &&
     order.orderDetails.reduce(
-      (accumulator, currentValue) =>
+      (accumulator: any, currentValue) =>
         accumulator + currentValue.base_qty_half_part,
       0
     );
@@ -236,6 +243,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
         ? Number(dataInput.order_qty)
         : 0,
       isDetails: dataInput.isDetails,
+      user: user?._id,
     };
 
     function isFloat(value: number) {
@@ -308,11 +316,65 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
     }
   };
 
-  const handleJobBag = () => {
+  const handleJobBag = async () => {
     try {
-      const data = {
+      const userData = {
         orderId: getValues("orderId"),
+        user: user?.name,
       };
+
+      const response = await Axios.put(`/order/job/bag`, userData, {
+        responseType: "blob", // Important for binary data
+      });
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+
+      // Open in new window with proper null checks
+      const printWindow = window.open(url);
+
+      if (printWindow) {
+        // Add event listener for when the window loads
+        printWindow.addEventListener(
+          "load",
+          () => {
+            // Additional safety check
+            if (!printWindow.closed) {
+              printWindow.print();
+            }
+          },
+          { once: true }
+        );
+
+        // Fallback in case the load event doesn't fire
+        setTimeout(() => {
+          if (printWindow && !printWindow.closed) {
+            printWindow.print();
+          }
+        }, 1000);
+      } else {
+        // Popup was blocked - use iframe fallback
+        const iframe = document.createElement("iframe");
+        iframe.style.display = "none";
+        iframe.src = url;
+        document.body.appendChild(iframe);
+
+        iframe.onload = () => {
+          setTimeout(() => {
+            iframe.contentWindow?.print();
+            // Clean up
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(iframe);
+          }, 1000);
+        };
+      }
+
+      // Cleanup URL object after printing
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 10000);
+
+      const { data } = await Axios.put("/order/job/bag", userData);
+      console.log(data);
     } catch (err: any) {
       console.log(err);
     }
@@ -511,7 +573,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
     // Set basic form values
     setIdDisable(true);
     setValue("orderId", order?.orderId || "New");
-    setValue("serial", (order?.orderDetails?.length || 0) + 1);
+    setValue("serial", (parseInt(order?.orderDetails?.length as any) || 0) + 1);
     setValue("isDetails", true as any);
     setIsDetails(true);
 
@@ -544,7 +606,10 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
     setOrderStatus(order?.status.mode as string);
 
     // Reset form fields based on conditions
-    if (isDetails && getValues("serial") !== order?.orderDetails?.length) {
+    if (
+      isDetails &&
+      parseInt(getValues("serial") as any) !== order?.orderDetails?.length
+    ) {
       setValue("order_qty", NaN);
       setValue("size_age", showSize ? "" : "");
       if (!showSize) {
@@ -595,6 +660,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
     if (orderSuccess) {
       toast(orderSuccess);
     }
+    dispatch(ClearOrderSuccess());
   }, [orderSuccess]);
 
   /* ==================================== */
@@ -638,6 +704,63 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
     }
   };
 
+  /* ================================== */
+  /* ------------- DELETE ------------- */
+  /* ================================== */
+  const [orderDelete, setOrderDelete] = useState<{ serial: string | number }[]>(
+    []
+  );
+
+  // Use useCallback for better performance
+  const handleSelectedDelete = useCallback((val: any, isChecked: any) => {
+    setOrderDelete((prev: any) => {
+      if (isChecked) {
+        // Check if item already exists to avoid duplicates
+        if (prev.some((item: any) => item.serial === val.serial)) {
+          return prev;
+        }
+        return [...prev, val];
+      } else {
+        return prev.filter((item: any) => item.serial !== val.serial);
+      }
+    });
+  }, []);
+
+  const handleSelectAll = useCallback(
+    (isChecked: any) => {
+      if (isChecked) {
+        setOrderDelete(reversedOrderDetails || []);
+      } else {
+        setOrderDelete([]);
+      }
+    },
+    [reversedOrderDetails]
+  );
+
+  const isAllSelected =
+    reversedOrderDetails?.length > 0 &&
+    orderDelete.length === reversedOrderDetails.length;
+
+  // Function to check if a specific item is selected
+  const isItemSelected = useCallback(
+    (serial: any) => {
+      return orderDelete.some((item) => item.serial === serial);
+    },
+    [orderDelete]
+  );
+
+  useEffect(() => {
+    if (orderDeleteSuccess) {
+      toast.dark(orderDeleteSuccess);
+      setOrderDelete([]);
+    }
+    if (orderDeleteError) {
+      toast.dark(orderDeleteError);
+    }
+    dispatch(ClearOrderDeleteSuccess());
+    dispatch(ClearOrderDeleteError());
+  }, [orderDeleteSuccess, orderDeleteError]);
+
   return (
     <div className="flex  relative bg-white">
       <div className="w-[93%]  px-3 pt-12 min-h-dvh">
@@ -665,7 +788,10 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
           {orderStatus === "Validated" && (
             <div className="fieldset w-1/12">
               <legend className="fieldset-legend"></legend>
-              <button className="border border-[#b3b3b3] text-[#333333] rounded-sm px-4 py-2 text-sm  cursor-pointer  font-bold">
+              <button
+                onClick={handleJobBag}
+                className="border border-[#b3b3b3] text-[#333333] rounded-sm px-4 py-2 text-sm  cursor-pointer  font-bold"
+              >
                 Job Bag
               </button>
             </div>
@@ -1265,6 +1391,18 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                   <thead className="bg-gray-200 sticky top-0 z-10">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-24">
+                        <input
+                          type="checkbox"
+                          className="checkbox"
+                          disabled={
+                            orderStatus === "Validated" ||
+                            !reversedOrderDetails.length
+                          }
+                          checked={isAllSelected}
+                          onChange={(e) => handleSelectAll(e.target.checked)}
+                        />
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-24">
                         SL No.
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-48">
@@ -1275,6 +1413,15 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-40">
                         Style/Iman/CC
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-32">
+                        Booking Qty
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-32">
+                        Order Unit
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-32">
+                        Page/Part
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-40">
                         Pack/Article/Item
@@ -1291,15 +1438,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-32">
                         Ean
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-32">
-                        Booking Qty
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-32">
-                        Order Unit
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-32">
-                        Page/Part
-                      </th>
+
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-32">
                         Base Full
                       </th>
@@ -1311,8 +1450,19 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
 
                   {/* Scrollable Body */}
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {reversedOrderDetails?.map((val, index) => (
+                    {reversedOrderDetails?.map((val: any, index) => (
                       <tr key={index} className="hover:bg-gray-50 h-12">
+                        <td className="px-4 py-3 text-sm text-gray-900 align-middle h-12">
+                          <input
+                            type="checkbox"
+                            className="checkbox"
+                            disabled={orderStatus === "Validated"}
+                            checked={isItemSelected(val.serial)}
+                            onChange={(e) =>
+                              handleSelectedDelete(val, e.target.checked)
+                            }
+                          />
+                        </td>
                         <td className="px-4 py-3 text-sm text-gray-900 align-middle h-12">
                           {val.serial}
                         </td>
@@ -1329,6 +1479,15 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                           {val.style_cc_iman || "N/A"}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900 align-middle h-12">
+                          {val.order_qty || "0"}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-900 align-middle h-12">
+                          {val.order_unit || ""}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-900 align-middle h-12">
+                          {val.page_part || "0"}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-900 align-middle h-12">
                           {val.item_pact_art || "N/A"}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900 align-middle h-12">
@@ -1343,15 +1502,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
                         <td className="px-4 py-3 text-sm text-gray-900 align-middle h-12">
                           {val.ean_number || "N/A"}
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-900 align-middle h-12">
-                          {val.order_qty || "0"}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-900 align-middle h-12">
-                          {val.order_unit || ""}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-900 align-middle h-12">
-                          {val.page_part || "0"}
-                        </td>
+
                         <td className="px-4 py-3 text-sm text-gray-900 align-middle h-12">
                           {val.base_qty_full_part || "0"}
                         </td>
@@ -1385,6 +1536,7 @@ const OrderCreate = ({ props, setTab, tab }: any) => {
           setShowSize={setShowSize}
           setSelectedDesc={setSelectedDesc}
           setSelectedCategory={setSelectedCategory}
+          orderDelete={orderDelete}
         />
       </div>
       <dialog id="my_modal_1" className="modal w-full">

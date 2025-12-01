@@ -39,6 +39,8 @@ export interface program {
 
 export interface Iprocess {
   title: string;
+  details: boolean;
+  inforamtion: string;
   line: string;
   spec?: Ispecification[];
 }
@@ -55,4 +57,11 @@ export interface Iserial {
 
 export interface Iitem {
   title: string;
+}
+
+export interface IPDetails {
+  line: string;
+  process: string;
+  details: boolean;
+  information: string;
 }

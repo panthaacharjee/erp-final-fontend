@@ -61,6 +61,10 @@ const processState: productProcessState = {
   itemLoading: false,
   itemSuccess: null,
   itemError: null,
+
+  pDetailsLoading: false,
+  pDetailsSuccess: null,
+  pDetailsError: null,
 };
 
 export const businessSlice = createSlice({
@@ -265,6 +269,18 @@ export const processSlice = createSlice({
       state.itemError = action.payload;
     },
 
+    CreateProcessDetailsRequest(state) {
+      state.pDetailsLoading = true;
+    },
+    CreateProcessDetailsSuccess(state, action: PayloadAction<string>) {
+      state.pDetailsLoading = false;
+      state.pDetailsSuccess = action.payload;
+    },
+    CreateProcessDetailsFail(state, action: PayloadAction<string>) {
+      state.pDetailsLoading = false;
+      state.pDetailsError = action.payload;
+    },
+
     /* ========== Clear Error ============ */
     ClearProcessSuccess(state) {
       state.processSuccess = null;
@@ -364,6 +380,10 @@ export const {
   CreateItemRequest,
   CreateItemSuccess,
   CreateItemFail,
+
+  CreateProcessDetailsRequest,
+  CreateProcessDetailsSuccess,
+  CreateProcessDetailsFail,
 
   ClearProcessSuccess,
   ClearProcessError,

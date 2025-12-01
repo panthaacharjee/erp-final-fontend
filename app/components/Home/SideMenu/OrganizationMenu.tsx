@@ -19,6 +19,9 @@ import {
 import { toast } from "react-toastify";
 import {
   ClearOrderRefresh,
+  OrderDeleteError,
+  OrderDeleteRequest,
+  OrderDeleteSuccess,
   OrderFail,
   OrderRequest,
   OrderSuccess,
@@ -46,6 +49,7 @@ const OrganizationMenu = ({
   props,
   id,
   user,
+  orderDelete,
 }: any) => {
   const dispatch = useDispatch();
   const { items, content } = useSelector((state: RootState) => state.tab);
@@ -307,23 +311,27 @@ const OrganizationMenu = ({
     }
   };
 
-  const handleDownload = async () => {
+  const handleDelete = async () => {
     try {
-      const response = await Axios.get(`/product/details/${id}`, {
-        responseType: "blob", // Important for binary data
+      const orderDeleteData = orderDelete.map((val: any) => {
+        return val.serial;
       });
-      // Create a blob URL for the PDF
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `prdocut-details.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      // Clean up
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(link);
-    } catch (err) {
-      console.error("Error downloading PDF:", err);
+      if (getValues("orderId") === "New") {
+        return toast.dark("ORDER NOT FOUND");
+      }
+      if (orderDeleteData.length < 1) {
+        return toast.dark("PLEASE SELECT ATLEAST ONE ROW");
+      }
+
+      dispatch(OrderDeleteRequest());
+      const userData = {
+        orderId: getValues("orderId"),
+        serialsToDelete: orderDeleteData,
+      };
+      const { data } = await Axios.put("order/details/delete", userData);
+      dispatch(OrderDeleteSuccess(data));
+    } catch (err: any) {
+      dispatch(OrderDeleteError(err.response.data.message));
     }
   };
 
@@ -368,7 +376,7 @@ const OrganizationMenu = ({
         <p className="text-xs mt-1 cursor-pointer">Preview</p>
       </div>
       <div
-        onClick={handleDownload}
+        onClick={handleDelete}
         className="bg-[#e0eef2] border-2 border-blue-100 px-3 py-2 rounded-lg flex items-center flex-col cursor-pointer hover:bg-[#96c8dc] mt-4"
       >
         <p className="text-2xl">

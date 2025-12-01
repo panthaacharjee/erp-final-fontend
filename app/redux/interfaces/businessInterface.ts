@@ -109,4 +109,8 @@ export interface productProcessState {
   itemLoading: boolean;
   itemSuccess: string | null;
   itemError: string | null;
+
+  pDetailsLoading: boolean;
+  pDetailsSuccess: string | null;
+  pDetailsError: string | null;
 }

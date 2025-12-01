@@ -7,6 +7,7 @@ import { RootState } from "@/app/redux/rootReducer";
 import { useForm } from "react-hook-form";
 import {
   Iitem,
+  IPDetails,
   Iprocess,
   Iserial,
   Ispecification,
@@ -24,6 +25,9 @@ import {
   CreateItemFail,
   CreateItemRequest,
   CreateItemSuccess,
+  CreateProcessDetailsFail,
+  CreateProcessDetailsRequest,
+  CreateProcessDetailsSuccess,
   CreateProcessFail,
   CreateProcessRequest,
   CreateProcessSuccess,
@@ -60,6 +64,8 @@ const ProductProcess = ({ props, setTab, tab }: any) => {
     itemLoading,
     itemSuccess,
     itemError,
+
+    pDetailsLoading,
   } = useSelector((state: RootState) => state.process);
 
   const { getLine } = useSelector((state: RootState) => state.product_details);
@@ -231,6 +237,30 @@ const ProductProcess = ({ props, setTab, tab }: any) => {
   };
   /* ================== SHOW PROCESS FORM END =================== */
 
+  /* ================== DETAILS PROCESS FORM START =================== */
+  const [detailsLine, setDetailsLine] = useState<line | undefined>(undefined);
+  const handleDetailsLine = (e: any) => {
+    const lineName = e.target.value;
+
+    const line = getLine?.find((b) => b.name === lineName);
+    setDetailsLine(line as any);
+    setDetailsProcess(undefined);
+  };
+
+  const [detailsProcess, setDetailsProcess] = useState<Iprocess | undefined>(
+    undefined
+  );
+
+  const handleDetailsProcess = (e: any) => {
+    const processTitle = e.target.value;
+    const process = detailsLine?.process?.find(
+      (item: any) => item.title === processTitle
+    );
+    setDetailsProcess(process);
+  };
+
+  /* ================== DETAILS PROCESS FORM END =================== */
+
   const { register: pregister, handleSubmit: phandleSubmit } =
     useForm<Iprocess>();
 
@@ -296,6 +326,25 @@ const ProductProcess = ({ props, setTab, tab }: any) => {
       dispatch(CreateItemSuccess(data.message));
     } catch (err: any) {
       dispatch(CreateItemFail(err.response.data.message));
+    }
+  };
+
+  const { register: dregister, handleSubmit: dhandleSubmit } =
+    useForm<IPDetails>();
+
+  const handleDetailsSet = async (dataInput: any) => {
+    const userData = {
+      line: detailsLine?.name,
+      process: detailsProcess?.title,
+      details: dataInput.details,
+      information: dataInput.information,
+    };
+    try {
+      dispatch(CreateProcessDetailsRequest());
+      const { data } = await Axios.put("/process/details", userData);
+      dispatch(CreateProcessDetailsSuccess(data.message));
+    } catch (err: any) {
+      dispatch(CreateProcessDetailsFail(err.response.data.message));
     }
   };
 
@@ -764,6 +813,169 @@ const ProductProcess = ({ props, setTab, tab }: any) => {
             </div>
           </div>
         </div>
+        <div className="collapse  bg-base-100 border border-base-300">
+          <input
+            type="checkbox"
+            name="my-accordion-3"
+            checked={processBlock}
+            onChange={() => setProcessBlock(true)}
+          />
+
+          <form
+            onSubmit={dhandleSubmit(handleDetailsSet)}
+            className="collapse-content text-sm"
+          >
+            <div className="flex justify-between mt-[-10px]">
+              <p className="font-semibold text-lg ">Process Details</p>
+              <button className="border-[1px] border-black px-6 py-2  rounded-sm bg-amber-200 text-xs cursor-pointer">
+                {pDetailsLoading ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  "SAVE"
+                )}
+              </button>
+            </div>
+            <div className="flex items-center flex-wrap">
+              <div className="fieldset w-3/12">
+                <legend className="fieldset-legend">Product Line</legend>
+                <select
+                  {...dregister("line")}
+                  onChange={handleDetailsLine}
+                  className="w-11/12 focus:outline-none focus:ring-0  select"
+                >
+                  <option value="" className="hidden"></option>
+                  {getLine?.map((val, ind) => {
+                    return (
+                      <option key={ind} value={val.name}>
+                        {val.name}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+              <div className="fieldset w-3/12">
+                <legend className="fieldset-legend">Product Process</legend>
+                <select
+                  onChange={handleDetailsProcess}
+                  value={detailsProcess?.title || ""}
+                  className="w-11/12 focus:outline-none focus:ring-0  select"
+                >
+                  <option value="" className="hidden"></option>
+                  {detailsLine?.process?.map((val, ind) => {
+                    return (
+                      <option key={ind} value={val.title}>
+                        {val.title}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+              <div className="fieldset w-3/12">
+                <legend className="fieldset-legend">Process Details</legend>
+                <select
+                  defaultValue={"false"}
+                  className="w-11/12 focus:outline-none focus:ring-0  select"
+                  {...dregister("details")}
+                >
+                  <option value="true">True</option>
+                  <option value="false">False</option>
+                </select>
+              </div>
+              <div className="fieldset w-3/12">
+                <legend className="fieldset-legend">Details Information</legend>
+                <select
+                  {...dregister("information")}
+                  className="w-11/12 focus:outline-none focus:ring-0  select"
+                  defaultValue={""}
+                >
+                  <option value=""></option>
+                  <option value="Full">Full</option>
+                  <option value="Half">Half</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+        {/* <div className="collapse  bg-base-100 border border-base-300">
+          <input
+            type="checkbox"
+            name="my-accordion-3"
+            checked={showBlock}
+            onChange={() => setShowBlock(true)}
+          />
+          <div className="collapse-title font-semibold">
+            <div className="flex justify-between mt-[10px]">
+              <p className="font-semibold text-lg ">Process Details</p>
+              <button className="border-[1px] border-black px-6 py-2  rounded-sm bg-amber-200 text-xs cursor-pointer">
+                {processLoading ? (
+                  <span className="loading loading-spinner loading-xs"></span>
+                ) : (
+                  "SAVE"
+                )}
+                SAVE
+              </button>
+            </div>
+          </div>
+          <div className="collapse-content text-sm">
+            <div className="flex items-center flex-wrap">
+              <div className="fieldset w-3/12">
+                <legend className="fieldset-legend">Product Line</legend>
+                <select
+                  {...dregister("line")}
+                  onChange={handleDetailsLine}
+                  className="w-11/12 focus:outline-none focus:ring-0  select"
+                >
+                  <option value="" className="hidden"></option>
+                  {getLine?.map((val, ind) => {
+                    return (
+                      <option key={ind} value={val.name}>
+                        {val.name}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+              <div className="fieldset w-3/12">
+                <legend className="fieldset-legend">Product Process</legend>
+                <select
+                  onChange={handleDetailsProcess}
+                  value={detailsProcess?.title || ""}
+                  className="w-11/12 focus:outline-none focus:ring-0  select"
+                >
+                  <option value="" className="hidden"></option>
+                  {detailsLine?.process?.map((val, ind) => {
+                    return (
+                      <option key={ind} value={val.title}>
+                        {val.title}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+              <div className="fieldset w-3/12">
+                <legend className="fieldset-legend">Process Details</legend>
+                <select
+                  defaultValue={"false"}
+                  className="w-11/12 focus:outline-none focus:ring-0  select"
+                  {...dregister("details")}
+                >
+                  <option value="true">True</option>
+                  <option value="false">False</option>
+                </select>
+              </div>
+              <div className="fieldset w-3/12">
+                <legend className="fieldset-legend">Details Information</legend>
+                <select
+                  {...dregister("information")}
+                  className="w-11/12 focus:outline-none focus:ring-0  select"
+                >
+                  <option value="true">Full</option>
+                  <option value="false">Half</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div> */}
       </div>
       <div className="w-[7%] bg-[#d3e6ec]  min-h-screen pt-14 px-2">
         <OrganizationMenu tab={tab} setTab={setTab} props={props} />

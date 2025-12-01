@@ -107,5 +107,9 @@ export interface orderState {
   orderValidationSuccess: string | null;
   orderValidationError: string | null;
 
+  orderDeleteLoading: boolean;
+  orderDeleteSuccess: string | null;
+  orderDeleteError: string | null;
+
   order: IGetOrder | null;
 }

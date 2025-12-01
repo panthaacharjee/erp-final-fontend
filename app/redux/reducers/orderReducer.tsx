@@ -18,6 +18,10 @@ const orderInitialState: orderState = {
   orderValidationSuccess: null,
   orderValidationError: null,
 
+  orderDeleteLoading: false,
+  orderDeleteSuccess: null,
+  orderDeleteError: null,
+
   order: null,
 };
 
@@ -86,12 +90,34 @@ const orderSlice = createSlice({
       state.orderValidationSuccess = action.payload;
     },
 
+    OrderDeleteRequest(state) {
+      state.orderDeleteLoading = true;
+    },
+    OrderDeleteSuccess(state, action: PayloadAction<IOrderState>) {
+      state.orderDeleteLoading = false;
+      state.orderDeleteSuccess = action.payload.message;
+      state.order = action.payload.order;
+    },
+    OrderDeleteError(state, action: PayloadAction<string>) {
+      state.orderDeleteLoading = false;
+      state.orderDeleteSuccess = null;
+      state.orderDeleteSuccess = action.payload;
+    },
+
     ClearOrderSuccess(state) {
       state.orderSuccess = null;
     },
     ClearOrderError(state) {
       state.orderError = null;
     },
+
+    ClearOrderDeleteSuccess(state) {
+      state.orderDeleteSuccess = null;
+    },
+    ClearOrderDeleteError(state) {
+      state.orderDeleteError = null;
+    },
+
     ClearOrderRefresh(state) {
       state.order = null;
     },
@@ -115,8 +141,15 @@ export const {
   OrderValidationSuccess,
   OrderValidationError,
 
+  OrderDeleteRequest,
+  OrderDeleteSuccess,
+  OrderDeleteError,
+
   ClearOrderSuccess,
   ClearOrderError,
+
+  ClearOrderDeleteSuccess,
+  ClearOrderDeleteError,
 
   ClearOrderRefresh,
 } = orderSlice.actions;
